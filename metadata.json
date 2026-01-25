@@ -1,0 +1,7 @@
+{
+  "name": "Ficha Técnica Pro",
+  "description": "Uma ferramenta profissional para transformar anotações, fotos e PDFs de receitas em fichas técnicas padronizadas e elegantes.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
