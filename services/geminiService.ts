@@ -2,7 +2,7 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { Recipe } from "../types";
 
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY || '' });
+const ai = new GoogleGenAI({ apiKey: import.meta.env.VITE_API_KEY || '' });
 
 const RECIPE_SCHEMA = {
   type: Type.OBJECT,
@@ -57,23 +57,39 @@ export const parseRecipe = async (input: string | { data: string; mimeType: stri
     ? { parts: [{ text: `${prompt}\n\n${safeInput}` }] }
     : { parts: [{ text: prompt }, { inlineData: input }] };
 
-  const response = await ai.models.generateContent({
-    model,
-    contents,
-    config: {
-      responseMimeType: "application/json",
-      responseSchema: RECIPE_SCHEMA,
-    },
-  });
+  try {
+    const response = await ai.models.generateContent({
+      model,
+      contents,
+      config: {
+        responseMimeType: "application/json",
+        responseSchema: RECIPE_SCHEMA,
+      }
+    });
+    const raw = response.text;
+    if (!raw) {
+      throw new Error('Empty response from AI');
+    }
+    const parsed = JSON.parse(raw) as Recipe;
 
-  const rawText = response.text;
-  if (!rawText) throw new Error("A IA não retornou dados válidos.");
+    const ingredientsWithIds = (parsed.ingredientes || []).map((ing) => ({
+      ...ing,
+      id: crypto.randomUUID()
+    }));
 
-  const parsed = JSON.parse(rawText);
+    const stepsWithIds = (parsed.modo_preparo || []).map((step: string) => ({
+      id: crypto.randomUUID(),
+      text: step
+    }));
 
-  return {
-    ...parsed,
-    id: crypto.randomUUID(),
-    data: new Date().toLocaleDateString('pt-BR'),
-  } as Recipe;
+    return {
+      ...parsed,
+      ingredientes: ingredientsWithIds,
+      modo_preparo: stepsWithIds,
+      id: crypto.randomUUID(),
+      data: new Date().toISOString().slice(0, 10),
+    } as Recipe;
+  } catch (error) {
+    throw error;
+  }
 };
