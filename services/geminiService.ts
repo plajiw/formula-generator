@@ -26,11 +26,11 @@ const RECIPE_SCHEMA = {
     modo_preparo: {
       type: Type.ARRAY,
       items: { type: Type.STRING },
-      description: 'Passos numerados do modo de preparo.',
+      description: 'Passos detalhados do modo de preparo.',
     },
     observacoes: {
       type: Type.STRING,
-      description: 'Qualquer observação técnica ou aviso encontrado.',
+      description: 'Observações técnicas, rendimento ou avisos.',
     },
   },
   required: ['nome_formula', 'ingredientes', 'modo_preparo'],
@@ -39,20 +39,22 @@ const RECIPE_SCHEMA = {
 export const parseRecipe = async (input: string | { data: string; mimeType: string }): Promise<Recipe> => {
   const model = 'gemini-3-flash-preview';
   
-  const prompt = `Você é um especialista em padronização de fórmulas industriais e gastronômicas.
-  Sua tarefa é extrair os dados do conteúdo fornecido e estruturá-los em uma ficha técnica.
+  const prompt = `Você é um engenheiro de alimentos e mestre em padronização de fichas técnicas.
+  Sua missão é ler o conteúdo (texto, imagem ou PDF) e extrair TODOS os dados para uma estrutura técnica rigorosa.
   
-  Regras Críticas:
-  1. Extraia o nome da fórmula com precisão.
-  2. Normalize as unidades: gramas -> GR, quilogramas -> KG, mililitros -> ML, litros -> LT, unidades -> UN.
-  3. Se a quantidade for aproximada, use o valor numérico mais provável.
-  4. Organize o modo de preparo em passos lógicos e sequenciais.
-  5. Se houver informações confusas, tente interpretá-las tecnicamente.
+  DIRETRIZES:
+  1. NOME: Identifique o título principal da fórmula.
+  2. INGREDIENTES: Extraia cada item, separando nome, quantidade numérica e unidade. 
+     - Se a unidade for "gramas", use "GR". 
+     - Se for "litros", use "LT". 
+     - Se for "unidades", use "UN".
+  3. MODO DE PREPARO: Transforme o texto em uma lista de passos claros e sequenciais.
+  4. NUNCA invente dados. Se não houver ingredientes, deixe a lista vazia.
   
-  Retorne APENAS o JSON estruturado conforme o esquema.`;
+  Retorne rigorosamente o JSON solicitado.`;
 
   const contents = typeof input === 'string' 
-    ? { parts: [{ text: `${prompt}\n\nConteúdo:\n${input}` }] }
+    ? { parts: [{ text: `${prompt}\n\nCONTEÚDO PARA ANÁLISE:\n${input}` }] }
     : { parts: [{ text: prompt }, { inlineData: input }] };
 
   const response = await ai.models.generateContent({
@@ -65,7 +67,9 @@ export const parseRecipe = async (input: string | { data: string; mimeType: stri
   });
 
   const rawText = response.text;
-  const parsed = JSON.parse(rawText || '{}');
+  if (!rawText) throw new Error("A IA não retornou dados válidos.");
+  
+  const parsed = JSON.parse(rawText);
   
   return {
     ...parsed,
