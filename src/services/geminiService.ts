@@ -26,7 +26,7 @@ const RECIPE_SCHEMA = {
     modo_preparo: {
       type: Type.ARRAY,
       items: { type: Type.STRING },
-      description: 'Passos detalhados do modo de preparo.',
+      description: 'Passos do modo de preparo extraídos do input. Retorne [] se não houver preparo explícito.',
     },
     observacoes: {
       type: Type.STRING,
@@ -36,17 +36,46 @@ const RECIPE_SCHEMA = {
   required: ['nome_formula', 'ingredientes', 'modo_preparo'],
 };
 
+const hasExplicitPreparation = (text: string) => {
+  const normalized = text.normalize('NFKC');
+  const markers = [
+    /modo de preparo/i,
+    /modo de fazer/i,
+    /procedimento/i,
+    /instru[cç][õo]es?/i,
+    /\bpreparo\b/i,
+    /\bprocedure\b/i,
+    /\binstructions?\b/i,
+  ];
+  if (markers.some((regex) => regex.test(normalized))) return true;
+  const stepLines = /(^|\n)\s*(\d+[\).\-\:]|\u2022|[-*])\s+\S+/m;
+  if (stepLines.test(normalized)) return true;
+  const imperatives = /\b(misture|adicione|adicionar|mexa|bata|bater|aque[çc]a|misturar|incorpore|incorporar|homogene[ií]ze|homogeneizar)\b/i;
+  return imperatives.test(normalized);
+};
+
+const normalizeSteps = (steps: string[]) => {
+  const invalid = new Set(['', 'n/a', 'na', 'não informado', 'nao informado', 'não consta', 'nao consta']);
+  return steps
+    .map((step) => step?.trim())
+    .filter((step) => step && !invalid.has(step.toLowerCase()));
+};
+
 export const parseRecipe = async (input: string | { data: string; mimeType: string }): Promise<Recipe> => {
   const model = 'gemini-3-flash-preview';
 
   const prompt = `ATUE COMO UM SISTEMA DE EXTRAÇÃO DE DADOS ESTRITAMENTE TÉCNICOS.
   OBJETIVO: Extrair APENAS a fórmula/receita do input fornecido. IGNORE qualquer texto introdutório, histórias, notícias ou dados irrelevantes.
 
-  ⚠️ REGRAS CRÍTICAS DE ECONOMIA:
-  1. SE O TEXTO NÃO CONTIVER UMA RECEITA, RETORNE UMA LISTA VAZIA DE INGREDIENTES E UM TÍTULO "DADOS INVÁLIDOS".
-  2. Normalize unidades para siglas (GR, KG, ML, LT, UN).
-  3. Resuma o modo de preparo em passos curtos e diretos (imperativo).
-  4. Extraia apenas informações essenciais.
+  ⚠️ REGRAS CRÍTICAS (ESCOPO CONTROLADO):
+  1. IA EXTRAI E NORMALIZA. IA NÃO OPINA. IA NÃO "MELHORA".
+  2. NÃO INVENTE modo de preparo.
+  3. NÃO COMPLETE dados ausentes. Extraia SOMENTE o que estiver explícito no input.
+  4. A ausência de preparo é válida. Se não houver preparo explícito, retorne "modo_preparo": [].
+  5. Documentos industriais frequentemente NÃO incluem procedimento.
+  6. Normalize unidades para siglas (GR, KG, ML, LT, UN).
+  7. NÃO forneça sugestões subjetivas, otimizações, ou comentários que não estejam no input.
+  8. Se o texto não contiver uma receita, retorne ingredientes vazios e título "DADOS INVÁLIDOS".
 
   INPUT PARA ANÁLISE:`;
 
@@ -77,7 +106,11 @@ export const parseRecipe = async (input: string | { data: string; mimeType: stri
       id: crypto.randomUUID()
     }));
 
-    const stepsWithIds = (parsed.modo_preparo || []).map((step: string) => ({
+    const parsedSteps = Array.isArray(parsed.modo_preparo) ? parsed.modo_preparo : [];
+    const cleanedSteps = normalizeSteps(parsedSteps);
+    const allowSteps = typeof input === 'string' ? hasExplicitPreparation(input) : true;
+    const finalSteps = allowSteps ? cleanedSteps : [];
+    const stepsWithIds = finalSteps.map((step: string) => ({
       id: crypto.randomUUID(),
       text: step
     }));

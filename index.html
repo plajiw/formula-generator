@@ -46,7 +46,6 @@
         };
     </script>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
@@ -59,7 +58,146 @@
         }
 
         html.dark body {
-            background-color: #020617;
+            background-color: #0b0b0c;
+        }
+
+        :root {
+            --radius-lg: 14px;
+            --radius-md: 12px;
+            --radius-sm: 8px;
+            --border: #e2e8f0;
+            --shadow-1: 0 8px 20px rgba(15, 23, 42, 0.06);
+            --surface-0: #f8fafc;
+            --surface-1: #f1f5f9;
+            --surface-2: #e2e8f0;
+            --ink-0: #0f172a;
+            --ink-1: #334155;
+        }
+
+        html.dark {
+            --surface-0: #0b0b0c;
+            --surface-1: #111214;
+            --surface-2: #1a1c1f;
+            --ink-0: #f8fafc;
+            --ink-1: #cbd5f5;
+            --border: #2a2d32;
+            --shadow-1: 0 10px 22px rgba(0, 0, 0, 0.35);
+        }
+
+        .rounded-2xl {
+            border-radius: var(--radius-lg) !important;
+        }
+
+        .rounded-xl {
+            border-radius: var(--radius-md) !important;
+        }
+
+        .rounded-3xl {
+            border-radius: var(--radius-lg) !important;
+        }
+
+        .rounded-lg,
+        .rounded {
+            border-radius: var(--radius-sm) !important;
+        }
+
+        .ds-card {
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border);
+            background: var(--surface-1);
+            box-shadow: var(--shadow-1);
+        }
+
+        .ds-panel {
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border);
+            background: var(--surface-2);
+        }
+
+        .ds-input,
+        .ds-select,
+        .ds-textarea {
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border);
+            background: var(--surface-1);
+            color: var(--ink-0);
+            outline: none;
+        }
+
+        .ds-input {
+            height: 36px;
+            padding: 0 12px;
+        }
+
+        .ds-input-lg {
+            height: 44px;
+            padding: 0 14px;
+        }
+
+        .ds-textarea {
+            padding: 12px;
+            min-height: 120px;
+        }
+
+        .ds-button {
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border);
+            background: transparent;
+            color: var(--ink-1);
+        }
+
+        .ds-button-primary {
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--primary);
+            background: var(--primary);
+            color: #ffffff;
+        }
+
+        .ds-icon-button {
+            width: 32px;
+            height: 32px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border);
+            background: transparent;
+            color: var(--ink-1);
+        }
+
+        .ds-drop {
+            border-radius: var(--radius-md);
+            border: 2px dashed var(--border);
+            background: var(--surface-1);
+        }
+
+        html.dark .bg-slate-950 {
+            background-color: var(--surface-0) !important;
+        }
+
+        html.dark .bg-slate-900,
+        html.dark .bg-neutral-900 {
+            background-color: var(--surface-1) !important;
+        }
+
+        html.dark .bg-slate-800,
+        html.dark .bg-neutral-800 {
+            background-color: var(--surface-2) !important;
+        }
+
+        html.dark .border-slate-800,
+        html.dark .border-neutral-800,
+        html.dark .border-slate-700 {
+            border-color: #2a2d32 !important;
+        }
+
+        html.dark .text-slate-300,
+        html.dark .text-slate-400 {
+            color: #a1a8b5 !important;
+        }
+
+        html.dark .text-slate-500 {
+            color: #8a94a3 !important;
         }
 
         html:not(.dark) .border-slate-200 {
@@ -90,13 +228,39 @@
             body {
                 background-color: white;
             }
+
+            .print-page,
+            .print-page * {
+                overflow: visible !important;
+            }
+
+            .print-area {
+                box-shadow: none !important;
+                border: none !important;
+            }
+
+            .print-table {
+                break-inside: avoid;
+                page-break-inside: avoid;
+            }
+
+            .print-table thead {
+                display: table-header-group;
+            }
+
+            .print-row,
+            .print-section,
+            tr {
+                break-inside: avoid;
+                page-break-inside: avoid;
+            }
         }
     </style>
 </head>
 
 <body>
     <div id="root"></div>
-    <script type="module" src="/index.tsx"></script>
+    <script type="module" src="/src/index.tsx"></script>
 </body>
 
 </html>

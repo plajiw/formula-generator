@@ -1,0 +1,17 @@
+import { Recipe } from '../types';
+
+export const makeRecipeFilename = (recipe: Recipe) => {
+    const base = recipe.nome_formula || 'ficha_tecnica';
+    return base.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+};
+
+export const downloadBlob = (blob: Blob, filename: string) => {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+};

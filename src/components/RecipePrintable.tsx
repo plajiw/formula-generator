@@ -23,21 +23,34 @@ export const RecipePrintable: React.FC<Props> = ({ recipe }) => {
     large: '15px'
   };
   const baseFontSize = recipe.fontSize ? fontSizeMap[recipe.fontSize] || '14px' : '14px';
+  const showModoPreparo = (recipe.exibir_modo_preparo ?? true) && recipe.modo_preparo.some((passo) => passo.text?.trim());
+  const showObservacoes = (recipe.exibir_observacoes ?? true) && !!recipe.observacoes?.trim();
+  const isDraft = (recipe.status || 'RASCUNHO') === 'RASCUNHO';
 
   return (
     <div
-      className="bg-white p-8 sm:p-12 border border-gray-200 mx-auto max-w-[210mm] min-h-[297mm] print-area"
+      className="bg-white p-8 sm:p-12 border border-gray-200 mx-auto w-[210mm] min-h-[297mm] print-area print-page overflow-visible relative"
       style={{
         '--primary': recipe.accentColor || '#F28C28',
         fontFamily: recipe.fontFamily || 'Manrope, sans-serif',
         fontSize: baseFontSize
       } as React.CSSProperties}
     >
+      {isDraft && (
+        <div className="pointer-events-none select-none absolute inset-0 flex items-center justify-center">
+          <div className="text-[64px] font-black uppercase tracking-[0.4em] text-slate-200 opacity-40 rotate-[-18deg]">
+            RASCUNHO
+          </div>
+        </div>
+      )}
       {/* Header */}
       <div className="flex justify-between items-start border-b-2 border-[var(--primary)] pb-4 mb-6">
         <div>
           <h2 className="text-[var(--primary)] font-bold text-[1.3em] tracking-wider">FORMULAÇÃO TÉCNICA</h2>
           <p className="text-gray-500 text-[0.9em]">Controle de Produção Padronizado</p>
+          {recipe.nome_empresa && (
+            <p className="text-gray-800 font-bold uppercase text-[0.8em] mt-1">{recipe.nome_empresa}</p>
+          )}
         </div>
         <div className="text-right">
           <p className="text-[0.75em] font-semibold text-gray-400">DATA DE EMISSÃO</p>
@@ -52,9 +65,9 @@ export const RecipePrintable: React.FC<Props> = ({ recipe }) => {
       </div>
 
       {/* Ingredients Table */}
-      <div className="mb-8">
+      <div className="mb-8 print-section">
         <h3 className="text-[0.85em] font-bold text-[var(--primary)] mb-3 uppercase tracking-widest border-l-4 border-[var(--primary)] pl-2">Ingredientes e Composição</h3>
-        <table className="w-full border-collapse">
+        <table className="w-full border-collapse print-table">
           <thead>
             <tr className="bg-gray-50 text-left border-y border-gray-200">
               <th className="py-3 px-4 text-[0.75em] font-bold text-gray-600 uppercase">Item / Insumo</th>
@@ -68,11 +81,11 @@ export const RecipePrintable: React.FC<Props> = ({ recipe }) => {
               return (
                 <tr
                   key={idx}
-                  className="border-b border-gray-100 transition-colors"
+                  className="border-b border-gray-100 transition-colors print-row break-inside-avoid"
                 >
-                  <td className="py-3 px-4 text-[0.9em] text-gray-800" style={rowBackground ? { backgroundColor: rowBackground } : undefined}>{ing.nome}</td>
-                  <td className="py-3 px-4 text-[0.9em] text-gray-800 text-right font-medium" style={rowBackground ? { backgroundColor: rowBackground } : undefined}>{ing.quantidade}</td>
-                  <td className="py-3 px-4 text-[0.9em] text-gray-500 text-center uppercase font-mono" style={rowBackground ? { backgroundColor: rowBackground } : undefined}>{ing.unidade}</td>
+                  <td className="py-3 px-4 text-[0.9em] text-gray-800 break-words whitespace-normal" style={rowBackground ? { backgroundColor: rowBackground } : undefined}>{ing.nome}</td>
+                  <td className="py-3 px-4 text-[0.9em] text-gray-800 text-right font-medium break-words whitespace-normal" style={rowBackground ? { backgroundColor: rowBackground } : undefined}>{ing.quantidade}</td>
+                  <td className="py-3 px-4 text-[0.9em] text-gray-500 text-center uppercase font-mono break-words whitespace-normal" style={rowBackground ? { backgroundColor: rowBackground } : undefined}>{ing.unidade}</td>
                 </tr>
               );
             })}
@@ -81,12 +94,12 @@ export const RecipePrintable: React.FC<Props> = ({ recipe }) => {
       </div>
 
       {/* Methods */}
-      {recipe.modo_preparo.length > 0 && (
-        <div className="mb-8">
+      {showModoPreparo && (
+        <div className="mb-8 print-section">
           <h3 className="text-[0.85em] font-bold text-[var(--primary)] mb-4 uppercase tracking-widest border-l-4 border-[var(--primary)] pl-2">Procedimento Operacional (Modo de Preparo)</h3>
           <div className="space-y-4">
-            {recipe.modo_preparo.map((passo, idx) => (
-              <div key={idx} className="flex gap-4 items-start break-inside-avoid">
+            {recipe.modo_preparo.filter((passo) => passo.text?.trim()).map((passo, idx) => (
+              <div key={passo.id ?? idx} className="flex gap-4 items-start break-inside-avoid">
                 <span className="flex-shrink-0 w-6 h-6 rounded-full bg-gray-100 flex items-center justify-center text-xs font-bold text-gray-600 border border-gray-200">
                   {idx + 1}
                 </span>
@@ -98,8 +111,8 @@ export const RecipePrintable: React.FC<Props> = ({ recipe }) => {
       )}
 
       {/* Observations */}
-      {recipe.observacoes && (
-        <div className="mt-auto pt-8 border-t border-gray-100 break-inside-avoid">
+      {showObservacoes && (
+        <div className="mt-auto pt-8 border-t border-gray-100 break-inside-avoid print-section">
           <h3 className="text-[0.75em] font-bold text-gray-400 mb-2 uppercase tracking-widest">Observações Técnicas</h3>
           <p className="text-[0.75em] text-gray-500 italic leading-relaxed">{recipe.observacoes}</p>
         </div>
