@@ -220,6 +220,74 @@
             color: #475569;
         }
 
+        .print-pages {
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+        }
+
+        .print-compact {
+            padding: 24px !important;
+        }
+
+        .print-compact .print-header {
+            margin-bottom: 16px !important;
+            padding-bottom: 12px !important;
+        }
+
+        .print-compact .print-title {
+            margin-bottom: 24px !important;
+        }
+
+        .print-compact .print-section {
+            margin-bottom: 18px !important;
+        }
+
+        .print-compact .print-table th,
+        .print-compact .print-table td {
+            padding-top: 6px !important;
+            padding-bottom: 6px !important;
+        }
+
+        .print-steps {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .print-compact .print-step-text,
+        .print-compact .print-observations-text {
+            line-height: 1.35 !important;
+        }
+
+        .print-compact .print-observations {
+            padding-top: 14px !important;
+        }
+
+        .print-compact .print-footer {
+            margin-top: 20px !important;
+            padding-top: 10px !important;
+        }
+
+        .print-continuation {
+            border-bottom: 1px dashed rgba(148, 163, 184, 0.6);
+            color: #94a3b8;
+            font-size: 0.7em;
+            letter-spacing: 0.28em;
+            margin-bottom: 16px;
+            padding-bottom: 6px;
+            text-align: center;
+            text-transform: uppercase;
+        }
+
+        .print-measure {
+            position: absolute !important;
+            left: -9999px !important;
+            top: 0 !important;
+            visibility: hidden !important;
+            pointer-events: none !important;
+        }
+
         @media print {
             .no-print {
                 display: none !important;
@@ -253,6 +321,24 @@
             tr {
                 break-inside: avoid;
                 page-break-inside: avoid;
+            }
+
+            .print-pages {
+                gap: 0;
+            }
+
+            .print-page {
+                break-after: page;
+                page-break-after: always;
+            }
+
+            .print-page--last {
+                break-after: auto;
+                page-break-after: auto;
+            }
+
+            .print-measure {
+                display: none !important;
             }
         }
     </style>

@@ -154,6 +154,7 @@
     "item": "Item / Insumo",
     "procedureTitle": "Procedimento Operacional (Modo de Preparo)",
     "observationsTitle": "Observações Técnicas",
+    "pageContinuation": "Continuação — Página {page}",
     "footer": "Documento gerado eletronicamente para uso interno",
     "watermark": "RASCUNHO"
   },

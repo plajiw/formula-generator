@@ -154,6 +154,7 @@
     "item": "Item / Input",
     "procedureTitle": "Operational Procedure (Preparation)",
     "observationsTitle": "Technical Observations",
+    "pageContinuation": "Continuation — Page {page}",
     "footer": "Document generated electronically for internal use",
     "watermark": "DRAFT"
   },

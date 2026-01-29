@@ -204,12 +204,21 @@ const App: React.FC = () => {
             alert(t('messages.exportToolsMissing'));
             return;
         }
-        const canvas = await window.html2canvas(target, { scale: 2, backgroundColor: '#ffffff' });
-        const imgData = canvas.toDataURL('image/png');
         const pdf = new jsPDF('p', 'mm', 'a4');
         const pageWidth = 210;
         const pageHeight = 297;
-        pdf.addImage(imgData, 'PNG', 0, 0, pageWidth, pageHeight);
+        const pageNodes = Array.from(target.querySelectorAll<HTMLElement>('.print-page'))
+            .filter((node) => !node.classList.contains('print-measure'));
+        const pages = pageNodes.length ? pageNodes : [target];
+
+        for (let i = 0; i < pages.length; i++) {
+            const canvas = await window.html2canvas(pages[i], { scale: 2, backgroundColor: '#ffffff' });
+            const imgData = canvas.toDataURL('image/png');
+            if (i > 0) {
+                pdf.addPage();
+            }
+            pdf.addImage(imgData, 'PNG', 0, 0, pageWidth, pageHeight);
+        }
         pdf.save(`${fileBaseName}.pdf`);
     };
 
@@ -347,7 +356,7 @@ const App: React.FC = () => {
                                 )}
                             </div>
                             <div ref={previewRef}>
-                                <RecipePrintable recipe={currentRecipe} />
+                                <RecipePrintable recipe={currentRecipe} mode="print" />
                             </div>
                         </div>
                     </div>
