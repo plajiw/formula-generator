@@ -47,8 +47,6 @@
     </script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&family=Merriweather:wght@400;600;700&family=Oswald:wght@400;600&display=swap');
 
@@ -144,6 +142,16 @@
             border: 1px solid var(--border);
             background: transparent;
             color: var(--ink-1);
+            height: 38px;
+            padding: 0 16px !important;
+            font-size: 13px !important;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            white-space: nowrap;
+            line-height: 1;
         }
 
         .ds-button-primary {
@@ -151,11 +159,21 @@
             border: 1px solid var(--primary);
             background: var(--primary);
             color: #ffffff;
+            height: 38px;
+            padding: 0 16px !important;
+            font-size: 13px !important;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            white-space: nowrap;
+            line-height: 1;
         }
 
         .ds-icon-button {
-            width: 32px;
-            height: 32px;
+            width: 36px;
+            height: 36px;
             display: inline-flex;
             align-items: center;
             justify-content: center;
@@ -308,12 +326,19 @@
         }
 
         @media print {
+            @page {
+                size: A4;
+                margin: 0;
+            }
+
             .no-print {
                 display: none !important;
             }
 
             body {
                 background-color: white;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
             }
 
             .print-page,
@@ -324,6 +349,11 @@
             .print-area {
                 box-shadow: none !important;
                 border: none !important;
+            }
+
+            .print-page {
+                width: 210mm;
+                height: 297mm;
             }
 
             .print-table {

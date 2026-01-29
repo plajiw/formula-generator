@@ -201,28 +201,70 @@ const App: React.FC = () => {
         }
         const target = previewRef.current;
         if (!target) return;
-        // @ts-expect-error global from CDN
-        const { jsPDF } = window.jspdf || {};
-        if (!jsPDF || !window.html2canvas) {
-            alert(t('messages.exportToolsMissing'));
-            return;
-        }
-        const pdf = new jsPDF('p', 'mm', 'a4');
-        const pageWidth = 210;
-        const pageHeight = 297;
+
         const pageNodes = Array.from(target.querySelectorAll<HTMLElement>('.print-page'))
             .filter((node) => !node.classList.contains('print-measure'));
         const pages = pageNodes.length ? pageNodes : [target];
+        const pagesHtml = pages.map((page) => page.outerHTML).join('');
 
-        for (let i = 0; i < pages.length; i++) {
-            const canvas = await window.html2canvas(pages[i], { scale: 2, backgroundColor: '#ffffff' });
-            const imgData = canvas.toDataURL('image/png');
-            if (i > 0) {
-                pdf.addPage();
-            }
-            pdf.addImage(imgData, 'PNG', 0, 0, pageWidth, pageHeight);
+        const headStyles = Array.from(document.querySelectorAll('style, link[rel="stylesheet"]'))
+            .map((node) => node.outerHTML)
+            .join('');
+
+        const html = `<!doctype html>
+<html lang="${document.documentElement.lang || 'pt-BR'}" class="${document.documentElement.className}">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>${fileBaseName}</title>
+    ${headStyles}
+    <style>
+      html, body { margin: 0; padding: 0; background: #fff; }
+      body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .print-pages { display: flex; flex-direction: column; gap: 0; }
+      @page { size: A4; margin: 0; }
+    </style>
+  </head>
+  <body>
+    <div class="print-pages">${pagesHtml}</div>
+  </body>
+</html>`;
+
+        const iframe = document.createElement('iframe');
+        iframe.style.position = 'fixed';
+        iframe.style.right = '0';
+        iframe.style.bottom = '0';
+        iframe.style.width = '0';
+        iframe.style.height = '0';
+        iframe.style.border = '0';
+        iframe.style.opacity = '0';
+        iframe.setAttribute('aria-hidden', 'true');
+        document.body.appendChild(iframe);
+
+        const iframeWindow = iframe.contentWindow;
+        if (!iframeWindow) {
+            iframe.remove();
+            alert(t('messages.exportToolsMissing'));
+            return;
         }
-        pdf.save(`${fileBaseName}.pdf`);
+
+        iframeWindow.document.open();
+        iframeWindow.document.write(html);
+        iframeWindow.document.close();
+
+        const triggerPrint = () => {
+            iframeWindow.focus();
+            iframeWindow.print();
+            iframeWindow.onafterprint = () => {
+                iframe.remove();
+            };
+        };
+
+        iframe.onload = () => {
+            iframeWindow.requestAnimationFrame(() => {
+                setTimeout(triggerPrint, 150);
+            });
+        };
     };
 
     useEffect(() => {
@@ -312,11 +354,11 @@ const App: React.FC = () => {
 
                 {view === 'PREVIEW' && (
                     <div className="max-w-[210mm] mx-auto flex flex-col items-center py-8 animate-in zoom-in-95 duration-300">
-                        <div className="w-full flex items-center justify-between gap-3 mb-6 no-print">
-                            <div className="text-xs text-slate-500">
+                        <div className="w-full flex flex-wrap items-center justify-between gap-3 mb-6 no-print">
+                            <div className="text-xs text-slate-500 flex-1 min-w-[180px]">
                                 {t('common.file')}: <span className="font-mono text-slate-700 dark:text-slate-200">{fileBaseName}.pdf</span>
                             </div>
-                            <div className="flex items-center gap-3">
+                            <div className="flex flex-wrap items-center gap-3 justify-end">
                             <button
                                 onClick={() => setView('EDITOR')}
                                 className="px-5 py-2 text-sm font-bold ds-button hover:border-[var(--primary)] hover:text-[var(--primary)] transition-colors"

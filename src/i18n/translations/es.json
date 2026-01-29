@@ -133,7 +133,7 @@
   "messages": {
     "draftExportBlock": "La ficha está en BORRADOR. Márquela como FINAL para exportar.",
     "draftPdfBlock": "La ficha está en BORRADOR. Márquela como FINAL para exportar PDF.",
-    "exportToolsMissing": "Herramientas de exportación no disponibles.",
+    "exportToolsMissing": "No se pudo abrir la ventana de exportación.",
     "illustrationError": "No se pudo generar la ilustración.",
     "invalidJson": "JSON inválido. Verifique la estructura e intente nuevamente.",
     "xmlImportError": "Error al importar XML.",

@@ -236,7 +236,7 @@ export const RecipeEditor: React.FC<RecipeEditorProps> = ({
                                 <span className="text-slate-400">{t('editor.statusLabel')}</span>
                             </div>
                         </div>
-                        <div className="flex gap-3">
+                        <div className="flex flex-wrap items-center justify-end gap-3">
                             <button
                                 onClick={() => setShowPreview((prev) => !prev)}
                                 className="px-4 py-2 text-xs font-bold ds-button hover:border-[var(--primary)] hover:text-[var(--primary)] transition-colors flex items-center gap-2"
@@ -253,7 +253,7 @@ export const RecipeEditor: React.FC<RecipeEditorProps> = ({
                             </button>
                             <button
                                 onClick={() => manager.handleFieldChange('status', currentRecipe.status === 'FINAL' ? 'RASCUNHO' : 'FINAL')}
-                                className={`px-4 py-2 text-xs font-bold rounded-lg border transition ${currentRecipe.status === 'FINAL' ? 'border-emerald-500 text-emerald-600 hover:bg-emerald-50' : 'border-amber-500 text-amber-600 hover:bg-amber-50'}`}
+                                className={`ds-button transition ${currentRecipe.status === 'FINAL' ? 'border-emerald-500 text-emerald-600 hover:bg-emerald-50' : 'border-amber-500 text-amber-600 hover:bg-amber-50'}`}
                             >
                                 {currentRecipe.status === 'FINAL' ? t('buttons.markDraft') : t('buttons.markFinal')}
                             </button>
@@ -338,7 +338,7 @@ export const RecipeEditor: React.FC<RecipeEditorProps> = ({
                                     <div className="flex items-center gap-2">
                                         <h3 className="text-sm font-bold uppercase tracking-wide text-slate-700 dark:text-slate-300">{t('editor.ingredients')}</h3>
                                     </div>
-                                        <button onClick={manager.addIngredient} className="text-xs font-bold text-[var(--primary)] bg-[var(--primary)]/10 px-3 py-1.5 rounded-lg hover:bg-[var(--primary)] hover:text-white transition-colors flex items-center gap-1">
+                                        <button onClick={manager.addIngredient} className="ds-button text-[var(--primary)] bg-[var(--primary)]/10 hover:bg-[var(--primary)] hover:text-white transition-colors">
                                         <Plus size={14} /> {t('buttons.addItem')}
                                         </button>
                                 </div>
@@ -351,13 +351,13 @@ export const RecipeEditor: React.FC<RecipeEditorProps> = ({
                                         </div>
                                     )}
                                     {/* Header Row */}
-                                    <div className="grid grid-cols-12 gap-2 px-3 py-2 text-[10px] font-bold text-slate-400 uppercase tracking-wider text-center">
+                                    <div className="grid grid-cols-12 gap-2 pl-10 pr-3 py-2 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
                                         <div className="col-span-1 hidden sm:block">#</div>
                                         <div className="col-span-1 block sm:hidden"></div>
                                         <div className="col-span-5 text-left">{t('editor.itemHeader')}</div>
-                                        <div className="col-span-2">{t('common.qty')}</div>
-                                        <div className="col-span-2">{t('common.unit')}</div>
-                                        <div className="col-span-2">{t('editor.unitPrice')}</div>
+                                        <div className="col-span-2 text-right">{t('common.qty')}</div>
+                                        <div className="col-span-2 text-center">{t('common.unit')}</div>
+                                        <div className="col-span-2 text-right">{t('editor.unitPrice')}</div>
                                     </div>
 
                                     <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEndIngredients} modifiers={[restrictToVerticalAxis]}>
@@ -369,72 +369,69 @@ export const RecipeEditor: React.FC<RecipeEditorProps> = ({
 
                                                     return (
                                                         <SortableItem key={ing.id} id={ing.id} newlyAddedId={newlyAddedId} animationsEnabled={false}>
-                                                            <div className="grid grid-cols-12 gap-2 items-center">
+                                                            <div className="grid grid-cols-12 gap-2 items-start pr-3">
                                                                 {/* Removed manual GripVertical here, using SortableItem's internal grip */}
-                                                            <div className="col-span-1 hidden sm:flex justify-center items-center text-xs font-bold text-slate-300">
-                                                                {idx + 1}
-                                                            </div>
-                                                            <div className="col-span-1 flex sm:hidden justify-center items-center text-xs font-bold text-slate-300">
-                                                                {idx + 1}
-                                                            </div>
+                                                                <div className="col-span-1 hidden sm:flex justify-center pt-3 text-xs font-bold text-slate-300">
+                                                                    {idx + 1}
+                                                                </div>
+                                                                <div className="col-span-1 flex sm:hidden justify-center pt-3 text-xs font-bold text-slate-300">
+                                                                    {idx + 1}
+                                                                </div>
 
-                                                            <div className="col-span-5">
-                                                                <input
-                                                                    className="w-full h-9 ds-input text-sm font-medium focus:border-[var(--primary)] transition-colors"
-                                                                    value={ing.nome}
-                                                                    onChange={(e) => manager.updateIngredient(ing.id, 'nome', e.target.value)}
-                                                                    placeholder={t('placeholders.ingredientName')}
-                                                                />
-                                                                <div className="min-h-[16px] text-[10px] text-slate-400 font-mono mt-0.5 ml-1">{pct.toFixed(1)}%</div>
-                                                            </div>
-                                                            <div className="col-span-2">
-                                                                <div className="min-h-[56px] flex flex-col justify-start">
+                                                                <div className="col-span-5 min-h-[64px] flex flex-col gap-1">
+                                                                    <input
+                                                                        className="w-full h-10 ds-input text-sm font-medium focus:border-[var(--primary)] transition-colors"
+                                                                        value={ing.nome}
+                                                                        onChange={(e) => manager.updateIngredient(ing.id, 'nome', e.target.value)}
+                                                                        placeholder={t('placeholders.ingredientName')}
+                                                                    />
+                                                                    <div className="min-h-[16px] text-[10px] text-slate-400 font-mono ml-1">{pct.toFixed(1)}%</div>
+                                                                </div>
+                                                                <div className="col-span-2 min-h-[64px] flex flex-col gap-1">
                                                                     <input
                                                                         type="number"
-                                                                        className={`w-full h-9 ds-input text-right text-sm font-mono focus:border-[var(--primary)] transition-colors ${ing.quantidade === 0 ? 'border-amber-300' : ''}`}
+                                                                        className={`w-full h-10 ds-input text-right text-sm font-mono focus:border-[var(--primary)] transition-colors ${ing.quantidade === 0 ? 'border-amber-300' : ''}`}
                                                                         value={ing.quantidade}
                                                                         onChange={(e) => {
                                                                             const val = parseFloat(e.target.value) || 0;
                                                                             manager.updateIngredient(ing.id, 'quantidade', val);
                                                                         }}
                                                                     />
-                                                                    <div className="min-h-[16px] mt-1 text-[10px] text-amber-600 flex items-center gap-1">
+                                                                    <div className="min-h-[16px] text-[10px] text-amber-600 flex items-center gap-1">
                                                                         {ing.quantidade === 0 && (<><AlertTriangle size={12} /> {t('validation.qtyZero')}</>)}
                                                                     </div>
                                                                 </div>
-                                                            </div>
-                                                            <div className="col-span-2">
-                                                                <div className="min-h-[56px] flex flex-col justify-start">
+                                                                <div className="col-span-2 min-h-[64px] flex flex-col gap-1">
                                                                     <select
-                                                                        className="w-full h-9 ds-select text-xs font-bold uppercase text-center cursor-pointer"
+                                                                        className="w-full h-10 ds-select text-xs font-bold uppercase text-center cursor-pointer"
                                                                         value={ing.unidade}
                                                                         onChange={(e) => manager.updateIngredient(ing.id, 'unidade', e.target.value)}
                                                                     >
                                                                         {['GR', 'KG', 'ML', 'LT', 'UN'].map(u => <option key={u} value={u}>{u}</option>)}
                                                                     </select>
-                                                                    <div className="min-h-[16px] mt-1 text-[10px] text-amber-600 flex items-center gap-1">
+                                                                    <div className="min-h-[16px] text-[10px] text-amber-600 flex items-center gap-1">
                                                                         {ing.nome && unitSuggestion(ing.nome, ing.unidade) ? (<><AlertTriangle size={12} /> {unitSuggestion(ing.nome, ing.unidade)}</>) : null}
                                                                     </div>
                                                                 </div>
-                                                            </div>
-                                                            <div className="col-span-2">
-                                                                <div className="min-h-[56px] flex items-center gap-1">
-                                                                <span className="text-xs text-slate-400">{t('common.currency')}</span>
-                                                                    <input
-                                                                        type="number"
-                                                                        className="w-full h-9 bg-transparent text-right text-xs font-mono outline-none border-b border-transparent focus:border-[var(--primary)]"
-                                                                        placeholder={t('placeholders.unitPrice')}
-                                                                        value={ing.custo_unitario || ''}
-                                                                        onChange={(e) => manager.updateIngredient(ing.id, 'custo_unitario', parseFloat(e.target.value) || 0)}
-                                                                    />
-                                                                    <button
-                                                                        onClick={() => manager.removeIngredient(ing.id)}
-                                                                        className="ml-1 w-8 h-8 flex items-center justify-center rounded text-red-500 hover:text-red-700 hover:bg-red-100 transition"
-                                                                    >
-                                                                        <Trash2 size={14} />
-                                                                    </button>
+                                                                <div className="col-span-2 min-h-[64px] flex flex-col gap-1">
+                                                                    <div className="flex items-center gap-2">
+                                                                        <span className="text-xs text-slate-400">{t('common.currency')}</span>
+                                                                        <input
+                                                                            type="number"
+                                                                            className="w-full h-10 ds-input text-right text-sm font-mono focus:border-[var(--primary)] transition-colors"
+                                                                            placeholder={t('placeholders.unitPrice')}
+                                                                            value={ing.custo_unitario || ''}
+                                                                            onChange={(e) => manager.updateIngredient(ing.id, 'custo_unitario', parseFloat(e.target.value) || 0)}
+                                                                        />
+                                                                        <button
+                                                                            onClick={() => manager.removeIngredient(ing.id)}
+                                                                            className="w-9 h-9 flex items-center justify-center rounded text-red-500 hover:text-red-700 hover:bg-red-100 transition"
+                                                                        >
+                                                                            <Trash2 size={14} />
+                                                                        </button>
+                                                                    </div>
+                                                                    <div className="min-h-[16px]"></div>
                                                                 </div>
-                                                            </div>
                                                             </div>
                                                         </SortableItem>
                                                     )
@@ -473,7 +470,7 @@ export const RecipeEditor: React.FC<RecipeEditorProps> = ({
                                             {t('editor.showInFile')}
                                         </label>
                                     </div>
-                                    <button onClick={manager.addStep} className="text-xs font-bold text-[var(--primary)] hover:underline flex items-center gap-1">
+                                    <button onClick={manager.addStep} className="ds-button text-[var(--primary)] hover:border-[var(--primary)] hover:text-[var(--primary)] transition-colors">
                                         <Plus size={14} /> {t('buttons.addStep')}
                                     </button>
                                 </div>
@@ -483,12 +480,12 @@ export const RecipeEditor: React.FC<RecipeEditorProps> = ({
                                         <div className="space-y-3">
                                             {currentRecipe.modo_preparo.map((step, idx) => (
                                                 <SortableItem key={step.id} id={step.id} newlyAddedId={newlyAddedId} animationsEnabled={false}>
-                                                    <div className="flex flex-1 min-w-0 w-full gap-3 items-center">
-                                                        <div className="w-8 h-8 rounded bg-slate-100 dark:bg-neutral-800 flex items-center justify-center text-xs font-bold text-slate-500 dark:text-slate-400 flex-shrink-0">
+                                                    <div className="flex flex-1 min-w-0 w-full gap-3 items-start">
+                                                        <div className="w-8 h-8 mt-0.5 rounded bg-slate-100 dark:bg-neutral-800 flex items-center justify-center text-xs font-bold text-slate-500 dark:text-slate-400 flex-shrink-0">
                                                             {idx + 1}
                                                         </div>
                                                         <textarea
-                                                            className="flex-1 min-w-0 w-full bg-transparent text-sm outline-none resize-none min-h-[36px] leading-6 border-b border-transparent focus:border-[var(--primary)] transition-colors"
+                                                            className="flex-1 min-w-0 w-full bg-transparent text-sm outline-none resize-none min-h-[36px] leading-6 border-b border-transparent focus:border-[var(--primary)] transition-colors pt-1"
                                                             value={step.text}
                                                             onChange={(e) => manager.updateStep(step.id, e.target.value)}
                                                             placeholder={t('placeholders.step')}

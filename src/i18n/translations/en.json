@@ -133,7 +133,7 @@
   "messages": {
     "draftExportBlock": "This sheet is DRAFT. Mark as FINAL to export.",
     "draftPdfBlock": "This sheet is DRAFT. Mark as FINAL to export PDF.",
-    "exportToolsMissing": "Export tools not available.",
+    "exportToolsMissing": "Could not open the export window.",
     "illustrationError": "Unable to generate illustration.",
     "invalidJson": "Invalid JSON. Check the structure and try again.",
     "xmlImportError": "Error importing XML.",

@@ -133,7 +133,7 @@
   "messages": {
     "draftExportBlock": "A ficha está como RASCUNHO. Marque como FINAL para exportar.",
     "draftPdfBlock": "A ficha está como RASCUNHO. Marque como FINAL para exportar PDF.",
-    "exportToolsMissing": "Ferramentas de exportação não disponíveis.",
+    "exportToolsMissing": "Não foi possível abrir a janela de exportação.",
     "illustrationError": "Não foi possível gerar a ilustração.",
     "invalidJson": "JSON inválido. Verifique a estrutura e tente novamente.",
     "xmlImportError": "Erro ao importar XML.",
