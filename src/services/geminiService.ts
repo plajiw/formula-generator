@@ -36,6 +36,21 @@ const RECIPE_SCHEMA = {
   required: ['nome_formula', 'ingredientes', 'modo_preparo'],
 };
 
+const ILLUSTRATION_SCHEMA = {
+  type: Type.OBJECT,
+  properties: {
+    svg: {
+      type: Type.STRING,
+      description: 'SVG minimalista com viewBox 0 0 128 128.'
+    },
+    alt: {
+      type: Type.STRING,
+      description: 'Texto alternativo curto para a ilustração.'
+    }
+  },
+  required: ['svg', 'alt']
+};
+
 const hasExplicitPreparation = (text: string) => {
   const normalized = text.normalize('NFKC');
   const markers = [
@@ -142,4 +157,50 @@ export const parseRecipe = async (input: string | { data: string; mimeType: stri
   } catch (error) {
     throw error;
   }
+};
+
+export const generateIllustrationSvg = async (payload: { title: string; ingredients: string[]; locale: string }) => {
+  const apiKey = import.meta.env.VITE_API_KEY || '';
+  if (!apiKey) {
+    throw new Error('Missing API key');
+  }
+  const model = 'gemini-3-flash-preview';
+  const localeLabel = payload.locale === 'en' ? 'English' : payload.locale === 'es' ? 'Español' : 'Português (Brasil)';
+  const ingredientList = payload.ingredients.filter(Boolean).slice(0, 10).join(', ');
+  const subject = ingredientList || payload.title || 'ingredientes culinários';
+
+  const prompt = `VOCÊ É UM ILUSTRADOR MINIMALISTA.
+  OBJETIVO: CRIAR UM SVG SIMPLES, LIMPO E MONOCROMÁTICO.
+  DESENHE UM ÍCONE RELACIONADO A: ${subject}.
+
+  ✅ REGRAS:
+  - Retorne SOMENTE JSON válido com as chaves "svg" e "alt".
+  - O SVG deve ter viewBox="0 0 128 128".
+  - Use SOMENTE tags: svg, g, path, circle, rect, line, polyline, polygon, ellipse.
+  - Não use texto, imagens, filtros, gradients, máscaras ou símbolos.
+  - Use somente traços (stroke) e sem preenchimento (fill="none").
+  - Use stroke="currentColor" e stroke-width entre 2 e 3.
+  - Não inclua width/height no SVG.
+  - Mantenha o desenho simples (no máximo 6 elementos).
+  - O alt deve estar em ${localeLabel} e ter no máximo 6 palavras.`;
+
+  const response = await ai.models.generateContent({
+    model,
+    contents: { parts: [{ text: prompt }] },
+    config: {
+      responseMimeType: "application/json",
+      responseSchema: ILLUSTRATION_SCHEMA,
+      temperature: 0.4,
+    }
+  });
+
+  const raw = response.text;
+  if (!raw) {
+    throw new Error('Empty response from AI');
+  }
+  const parsed = JSON.parse(raw) as { svg: string; alt: string };
+  return {
+    svg: parsed.svg?.trim() || '',
+    alt: parsed.alt?.trim() || ''
+  };
 };

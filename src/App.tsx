@@ -141,6 +141,9 @@ const App: React.FC = () => {
                 stripedRows: true,
                 exibir_modo_preparo: true,
                 exibir_observacoes: true,
+                exibir_ilustracao: parsed.exibir_ilustracao ?? false,
+                ilustracao_svg: typeof parsed.ilustracao_svg === 'string' ? parsed.ilustracao_svg : '',
+                ilustracao_alt: typeof parsed.ilustracao_alt === 'string' ? parsed.ilustracao_alt : ''
             };
 
             loadRecipe(sanitizeRecipe(recipe));

@@ -38,9 +38,11 @@ export const RecipePrintable: React.FC<Props> = ({ recipe, mode = 'preview' }) =
   );
   const showModoPreparo = (recipe.exibir_modo_preparo ?? true) && filteredSteps.length > 0;
   const showObservacoes = (recipe.exibir_observacoes ?? true) && !!recipe.observacoes?.trim();
+  const showIllustration = (recipe.exibir_ilustracao ?? false) && !!recipe.ilustracao_svg?.trim();
   const isDraft = (recipe.status || 'RASCUNHO') === 'RASCUNHO';
   const totalIngredients = recipe.ingredientes.length;
   const totalSteps = showModoPreparo ? filteredSteps.length : 0;
+  const illustrationAlt = recipe.ilustracao_alt?.trim() || t('printable.illustrationAltFallback');
 
   const [pagination, setPagination] = useState<PaginationState>(() => ({
     pageCount: 1,
@@ -189,7 +191,16 @@ export const RecipePrintable: React.FC<Props> = ({ recipe, mode = 'preview' }) =
   );
 
   const renderTitle = () => (
-    <div className="print-title text-center mb-10">
+    <div className={`print-title text-center mb-10 relative ${showIllustration ? 'print-title--with-illustration' : ''}`}>
+      {showIllustration && (
+        <div
+          className="print-illustration recipe-illustration"
+          role="img"
+          aria-label={illustrationAlt}
+          style={{ color: 'var(--primary)' }}
+          dangerouslySetInnerHTML={{ __html: recipe.ilustracao_svg || '' }}
+        />
+      )}
       <h1 className="text-[2em] font-bold text-gray-800 uppercase tracking-tight">{recipe.nome_formula}</h1>
       <div className="h-1 w-24 bg-[var(--primary)] mx-auto mt-2"></div>
     </div>

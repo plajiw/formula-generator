@@ -1,4 +1,4 @@
-import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import {
     DndContext,
     closestCenter,
@@ -14,7 +14,7 @@ import {
     verticalListSortingStrategy
 } from '@dnd-kit/sortable';
 import { restrictToVerticalAxis } from '@dnd-kit/modifiers';
-import { Plus, Trash2, Settings2, Calculator, Save, FileText, Building2, AlertTriangle, Eye, EyeOff, ZoomIn, ZoomOut, RotateCcw } from 'lucide-react';
+import { Plus, Trash2, Settings2, Calculator, Save, FileText, Building2, AlertTriangle, Eye, EyeOff, ZoomIn, ZoomOut, RotateCcw, Sparkles } from 'lucide-react';
 
 import { useRecipeManager } from '../../../hooks/useRecipeManager';
 import { SortableItem } from '../../common/SortableItem';
@@ -22,6 +22,8 @@ import { RecipePrintable } from '../../RecipePrintable';
 import { FORMULA_THEMES, FORMULA_FONTS } from '../../../constants/themes';
 import { toISODate } from '../../../utils/dateUtils';
 import { useI18n } from '../../../i18n/i18n.tsx';
+import { generateIllustrationSvg } from '../../../services/geminiService';
+import { sanitizeIllustrationSvg } from '../../../utils/svgUtils';
 
 interface RecipeEditorProps {
     manager: ReturnType<typeof useRecipeManager>;
@@ -40,7 +42,7 @@ export const RecipeEditor: React.FC<RecipeEditorProps> = ({
     primaryColor,
     focusMode = false
 }) => {
-    const { t } = useI18n();
+    const { t, locale } = useI18n();
     const { currentRecipe, setCurrentRecipe, newlyAddedId, validationErrors } = manager;
     const [activeTab, setActiveTab] = useState<'content' | 'style'>('content');
     const previewStageRef = useRef<HTMLDivElement | null>(null);
@@ -53,6 +55,15 @@ export const RecipeEditor: React.FC<RecipeEditorProps> = ({
     const [zoomFactor, setZoomFactor] = useState(1);
     const [isMobilePreviewOpen, setIsMobilePreviewOpen] = useState(false);
     const [isResizing, setIsResizing] = useState(false);
+    const [isIllustrationGenerating, setIsIllustrationGenerating] = useState(false);
+    const [illustrationError, setIllustrationError] = useState<string | null>(null);
+
+    const ingredientNames = useMemo(
+        () => currentRecipe.ingredientes.map((ing) => ing.nome?.trim()).filter((name) => !!name) as string[],
+        [currentRecipe.ingredientes]
+    );
+    const canGenerateIllustration = !!currentRecipe.nome_formula?.trim() || ingredientNames.length > 0;
+    const hasIllustration = !!currentRecipe.ilustracao_svg?.trim();
 
     const sensors = useSensors(
         useSensor(PointerSensor),
@@ -90,6 +101,39 @@ export const RecipeEditor: React.FC<RecipeEditorProps> = ({
             return t('validation.unitLiquid');
         }
         return '';
+    };
+
+    const handleGenerateIllustration = async () => {
+        if (!canGenerateIllustration || isIllustrationGenerating) return;
+        setIllustrationError(null);
+        setIsIllustrationGenerating(true);
+        try {
+            const payload = {
+                title: String(currentRecipe.nome_formula || '').trim(),
+                ingredients: ingredientNames,
+                locale
+            };
+            const result = await generateIllustrationSvg(payload);
+            const safeSvg = sanitizeIllustrationSvg(result.svg);
+            if (!safeSvg) {
+                throw new Error('Invalid SVG');
+            }
+            manager.handleFieldChange('ilustracao_svg', safeSvg);
+            manager.handleFieldChange('ilustracao_alt', result.alt || t('printable.illustrationAltFallback'));
+            manager.handleFieldChange('exibir_ilustracao', true);
+        } catch (error) {
+            console.error('Illustration error:', error);
+            setIllustrationError(t('messages.illustrationError'));
+        } finally {
+            setIsIllustrationGenerating(false);
+        }
+    };
+
+    const handleRemoveIllustration = () => {
+        manager.handleFieldChange('ilustracao_svg', '');
+        manager.handleFieldChange('ilustracao_alt', '');
+        manager.handleFieldChange('exibir_ilustracao', false);
+        setIllustrationError(null);
     };
 
     useLayoutEffect(() => {
@@ -517,6 +561,65 @@ export const RecipeEditor: React.FC<RecipeEditorProps> = ({
                                         <option key={font.value} value={font.value}>{font.name}</option>
                                     ))}
                                 </select>
+                            </div>
+
+                            <div className="ds-card p-6 space-y-4">
+                                <div className="flex flex-wrap items-center justify-between gap-4">
+                                    <div>
+                                        <h3 className="text-sm font-bold uppercase tracking-wide text-slate-700 dark:text-slate-300">{t('editor.illustration')}</h3>
+                                        <p className="text-xs text-slate-400 mt-1">{t('editor.illustrationHint')}</p>
+                                    </div>
+                                    <label className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-slate-500">
+                                        <input
+                                            type="checkbox"
+                                            checked={currentRecipe.exibir_ilustracao ?? false}
+                                            onChange={(e) => manager.handleFieldChange('exibir_ilustracao', e.target.checked)}
+                                            disabled={!hasIllustration}
+                                            className="w-4 h-4 rounded border-slate-300 text-[var(--primary)] focus:ring-[var(--primary)] cursor-pointer disabled:opacity-50"
+                                        />
+                                        {t('editor.showInFile')}
+                                    </label>
+                                </div>
+                                <div className="flex flex-wrap items-center gap-3">
+                                    <button
+                                        onClick={handleGenerateIllustration}
+                                        disabled={!canGenerateIllustration || isIllustrationGenerating}
+                                        className="px-4 py-2 text-xs font-bold ds-button hover:border-[var(--primary)] hover:text-[var(--primary)] transition-colors disabled:opacity-50 flex items-center gap-2"
+                                    >
+                                        <Sparkles size={14} />
+                                        {isIllustrationGenerating
+                                            ? t('editor.illustrationLoading')
+                                            : hasIllustration
+                                                ? t('editor.illustrationRegenerate')
+                                                : t('editor.illustrationGenerate')}
+                                    </button>
+                                    {hasIllustration && (
+                                        <button
+                                            onClick={handleRemoveIllustration}
+                                            className="px-4 py-2 text-xs font-bold ds-button hover:border-red-400 hover:text-red-500 transition-colors"
+                                        >
+                                            {t('editor.illustrationRemove')}
+                                        </button>
+                                    )}
+                                </div>
+                                {!canGenerateIllustration && (
+                                    <p className="text-[10px] text-slate-400 italic">{t('editor.illustrationEmpty')}</p>
+                                )}
+                                {illustrationError && (
+                                    <p className="text-xs text-red-500">{illustrationError}</p>
+                                )}
+                                {hasIllustration && (
+                                    <div className="flex items-center gap-4">
+                                        <div
+                                            className="w-20 h-20 rounded-xl border border-slate-200 dark:border-neutral-800 bg-slate-50 dark:bg-neutral-900 flex items-center justify-center recipe-illustration"
+                                            role="img"
+                                            aria-label={currentRecipe.ilustracao_alt || t('printable.illustrationAltFallback')}
+                                            style={{ color: currentRecipe.accentColor || primaryColor }}
+                                            dangerouslySetInnerHTML={{ __html: currentRecipe.ilustracao_svg || '' }}
+                                        />
+                                        <div className="text-xs text-slate-500">{currentRecipe.ilustracao_alt || t('printable.illustrationAltFallback')}</div>
+                                    </div>
+                                )}
                             </div>
 
                             <div className="flex items-center gap-3 p-6 ds-card">

@@ -32,6 +32,9 @@ export interface Recipe {
   rendimento_unidades?: number;
   custo_total_formula?: number;
   nome_empresa?: string;
+  exibir_ilustracao?: boolean;
+  ilustracao_svg?: string;
+  ilustracao_alt?: string;
 }
 
 export type AppState = 'HOME' | 'IDLE' | 'XML' | 'PROCESSING' | 'EDITING' | 'PREVIEW' | 'HISTORY';

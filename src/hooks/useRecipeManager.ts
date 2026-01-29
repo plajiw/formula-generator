@@ -2,6 +2,7 @@ import { useState, useCallback } from 'react';
 import { Recipe, Ingredient, Step } from '../types';
 import { arrayMove } from '@dnd-kit/sortable';
 import { isoToday } from '../utils/dateUtils';
+import { sanitizeIllustrationSvg } from '../utils/svgUtils';
 
 const INITIAL_RECIPE: Recipe = {
     id: '',
@@ -11,13 +12,16 @@ const INITIAL_RECIPE: Recipe = {
     stripedRows: true,
     exibir_modo_preparo: true,
     exibir_observacoes: true,
+    exibir_ilustracao: false,
     status: 'RASCUNHO',
     rendimento_kg: 0,
     rendimento_unidades: 0,
     custo_total_formula: 0,
     data: isoToday(),
     observacoes: '',
-    nome_empresa: ''
+    nome_empresa: '',
+    ilustracao_svg: '',
+    ilustracao_alt: ''
 };
 
 export const useRecipeManager = () => {
@@ -34,6 +38,7 @@ export const useRecipeManager = () => {
 
     // Helper to ensure IDs exist
     const sanitizeRecipe = (recipe: Recipe): Recipe => {
+        const safeSvg = sanitizeIllustrationSvg(recipe.ilustracao_svg);
         return {
             ...recipe,
             id: recipe.id || crypto.randomUUID(),
@@ -42,8 +47,11 @@ export const useRecipeManager = () => {
             stripedRows: recipe.stripedRows ?? true,
             exibir_modo_preparo: recipe.exibir_modo_preparo ?? true,
             exibir_observacoes: recipe.exibir_observacoes ?? true,
+            exibir_ilustracao: recipe.exibir_ilustracao ?? false,
             status: recipe.status ?? 'RASCUNHO',
-            data: recipe.data || isoToday()
+            data: recipe.data || isoToday(),
+            ilustracao_svg: safeSvg || '',
+            ilustracao_alt: recipe.ilustracao_alt || ''
         };
     };
 
