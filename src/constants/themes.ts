@@ -1,20 +1,20 @@
 import { Recipe } from '../types';
 
 export const UI_THEMES = [
-    { name: 'Safety Orange', color: '#F28C28' },
-    { name: 'Royal Blue', color: '#2563EB' },
-    { name: 'Emerald Green', color: '#10B981' },
-    { name: 'Slate Dark', color: '#475569' },
+    { nameKey: 'themes.safetyOrange', color: '#F28C28' },
+    { nameKey: 'themes.royalBlue', color: '#2563EB' },
+    { nameKey: 'themes.emeraldGreen', color: '#10B981' },
+    { nameKey: 'themes.slateDark', color: '#475569' },
 ];
 
 export const FORMULA_THEMES = [
-    { name: 'Safety Orange', color: '#F28C28' },
-    { name: 'Royal Blue', color: '#2563EB' },
-    { name: 'Emerald Green', color: '#10B981' },
-    { name: 'Rose Red', color: '#E11D48' },
-    { name: 'Violet', color: '#7C3AED' },
-    { name: 'Teal', color: '#0D9488' },
-    { name: 'Slate', color: '#475569' },
+    { nameKey: 'themes.safetyOrange', color: '#F28C28' },
+    { nameKey: 'themes.royalBlue', color: '#2563EB' },
+    { nameKey: 'themes.emeraldGreen', color: '#10B981' },
+    { nameKey: 'themes.roseRed', color: '#E11D48' },
+    { nameKey: 'themes.violet', color: '#7C3AED' },
+    { nameKey: 'themes.teal', color: '#0D9488' },
+    { nameKey: 'themes.slate', color: '#475569' },
 ];
 
 export const FORMULA_FONTS = [
@@ -24,9 +24,9 @@ export const FORMULA_FONTS = [
 ];
 
 export const FORMULA_FONT_SIZES = [
-    { name: 'Pequena', value: 'small' },
-    { name: 'Média', value: 'medium' },
-    { name: 'Grande', value: 'large' },
+    { nameKey: 'fontSizes.small', value: 'small' },
+    { nameKey: 'fontSizes.medium', value: 'medium' },
+    { nameKey: 'fontSizes.large', value: 'large' },
 ] as const;
 
 export const isUiThemeColor = (value?: string) =>

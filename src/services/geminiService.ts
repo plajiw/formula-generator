@@ -9,7 +9,7 @@ const RECIPE_SCHEMA = {
   properties: {
     nome_formula: {
       type: Type.STRING,
-      description: 'Nome da receita ou fórmula técnica.',
+      description: 'Nome da receita ou fórmula técnica (corrigido e padronizado).',
     },
     ingredientes: {
       type: Type.ARRAY,
@@ -18,7 +18,7 @@ const RECIPE_SCHEMA = {
         properties: {
           nome: { type: Type.STRING },
           quantidade: { type: Type.NUMBER },
-          unidade: { type: Type.STRING, description: 'Unidade normalizada (Ex: GR, KG, ML, LT, UN)' },
+          unidade: { type: Type.STRING, description: 'Unidade normalizada (Ex: g, kg, ml, L, un)' },
         },
         required: ['nome', 'quantidade', 'unidade'],
       },
@@ -61,21 +61,37 @@ const normalizeSteps = (steps: string[]) => {
     .filter((step) => step && !invalid.has(step.toLowerCase()));
 };
 
-export const parseRecipe = async (input: string | { data: string; mimeType: string }): Promise<Recipe> => {
+export const parseRecipe = async (input: string | { data: string; mimeType: string }, locale: string): Promise<Recipe> => {
   const model = 'gemini-3-flash-preview';
+  const localeLabel = locale === 'en' ? 'English' : locale === 'es' ? 'Español' : 'Português (Brasil)';
+  const invalidTitle = locale === 'en' ? 'INVALID DATA' : locale === 'es' ? 'DATOS INVÁLIDOS' : 'DADOS INVÁLIDOS';
 
-  const prompt = `ATUE COMO UM SISTEMA DE EXTRAÇÃO DE DADOS ESTRITAMENTE TÉCNICOS.
-  OBJETIVO: Extrair APENAS a fórmula/receita do input fornecido. IGNORE qualquer texto introdutório, histórias, notícias ou dados irrelevantes.
+  const prompt = `VOCÊ É UM TÉCNICO EM FORMULAÇÃO DE ALIMENTOS E PROCESSOS INDUSTRIAIS.
+  OBJETIVO: ORGANIZAR e NORMALIZAR a fórmula/receita do input em uma ficha técnica estruturada,
+  corrigindo gramática/ortografia e reorganizando o modo de preparo sem alterar a intenção.
+  IGNORE texto introdutório, histórias, notícias e qualquer conteúdo irrelevante.
 
-  ⚠️ REGRAS CRÍTICAS (ESCOPO CONTROLADO):
-  1. IA EXTRAI E NORMALIZA. IA NÃO OPINA. IA NÃO "MELHORA".
-  2. NÃO INVENTE modo de preparo.
-  3. NÃO COMPLETE dados ausentes. Extraia SOMENTE o que estiver explícito no input.
-  4. A ausência de preparo é válida. Se não houver preparo explícito, retorne "modo_preparo": [].
-  5. Documentos industriais frequentemente NÃO incluem procedimento.
-  6. Normalize unidades para siglas (GR, KG, ML, LT, UN).
-  7. NÃO forneça sugestões subjetivas, otimizações, ou comentários que não estejam no input.
-  8. Se o texto não contiver uma receita, retorne ingredientes vazios e título "DADOS INVÁLIDOS".
+  ✅ REGRAS ABSOLUTAS:
+  1. NÃO invente ingredientes, quantidades ou etapas.
+  2. NÃO remova ingredientes existentes.
+  3. NÃO altere valores numéricos.
+  4. CORRIJA gramática, ortografia e clareza técnica do idioma.
+  5. PADRONIZE nomes de ingredientes (termos técnicos) mantendo o significado.
+  6. PADRONIZE unidades exclusivamente para: g, kg, ml, L, un.
+  7. REORGANIZE o modo de preparo em passos claros, numerados e objetivos.
+  8. Se algo estiver ambíguo/confuso, ajuste de forma lógica SEM alterar a intenção original.
+  9. Se NÃO houver preparo explícito, retorne "modo_preparo": [].
+  10. Se o texto NÃO contiver uma receita, retorne ingredientes vazios e título "${invalidTitle}".
+  11. Responda no idioma: ${localeLabel}.
+
+  ✅ FORMATAÇÃO DO MODO DE PREPARO:
+  - Retorne cada passo como texto completo e já numerado: "Passo 1 — ...", "Passo 2 — ...".
+  - Use linguagem técnica, direta e profissional.
+  - Quando houver tempo/condição (ex: "bater por 5 minutos"), inclua no passo correspondente.
+  - Corrija passos de ingredientes/etapas que estejam escritos de forma errada, mantendo o sentido.
+
+  FORMATO DE SAÍDA:
+  - Somente JSON válido, respeitando rigorosamente o schema.
 
   INPUT PARA ANÁLISE:`;
 
@@ -93,6 +109,7 @@ export const parseRecipe = async (input: string | { data: string; mimeType: stri
       config: {
         responseMimeType: "application/json",
         responseSchema: RECIPE_SCHEMA,
+        temperature: 0.1,
       }
     });
     const raw = response.text;

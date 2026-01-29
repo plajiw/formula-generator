@@ -1,0 +1,185 @@
+{
+  "common": {
+    "appName": "FormulaPro",
+    "systemTitle": "SISTEMA DE PADRONIZAÇÃO INDUSTRIAL",
+    "version": "v1.0.0-stable",
+    "systemReady": "SYSTEM: READY",
+    "optional": "Opcional",
+    "date": "Data",
+    "unit": "Unid.",
+    "qty": "Qtd.",
+    "currency": "R$",
+    "close": "Fechar",
+    "cancel": "Cancelar",
+    "save": "Salvar",
+    "back": "Voltar",
+    "edit": "Editar",
+    "loading": "Processando...",
+    "preview": "Preview",
+    "file": "Arquivo"
+  },
+  "buttons": {
+    "newSheet": "Nova Ficha",
+    "openWizard": "Assistente IA",
+    "importXml": "Importar XML",
+    "importJson": "Importar JSON",
+    "presets": "Presets",
+    "addItem": "Adicionar Item",
+    "addStep": "Adicionar Passo",
+    "saveSheet": "Salvar Ficha",
+    "exportXml": "Exportar XML",
+    "exportPdf": "Exportar PDF",
+    "print": "Imprimir",
+    "showPreview": "Mostrar Preview",
+    "hidePreview": "Ocultar Preview",
+    "viewPreview": "Ver Preview",
+    "focusMode": "Modo Foco",
+    "exitFocusMode": "Sair do Modo Foco",
+    "markFinal": "Marcar como Final",
+    "markDraft": "Marcar como Rascunho"
+  },
+  "nav": {
+    "backToHub": "Voltar ao Hub",
+    "settings": "Configurações"
+  },
+  "hub": {
+    "recent": "Recentes",
+    "viewAll": "Ver Todos",
+    "empty": "NENHUM DADO REGISTRADO",
+    "newSheetDesc": "Criar formulação técnica do zero.",
+    "wizardDesc": "Gerar a partir de foto ou texto bruto.",
+    "importXmlDesc": "Carregar backup de arquivo local.",
+    "importJsonDesc": "Colar estrutura JSON para carregar.",
+    "presetsDesc": "Criar ficha base pronta para edição.",
+    "start": "Iniciar",
+    "access": "Acessar",
+    "upload": "Upload",
+    "paste": "Colar",
+    "choose": "Escolher"
+  },
+  "wizard": {
+    "title": "Assistente IA",
+    "subtitle": "Descreva sua receita ou envie uma foto",
+    "label": "Descreva a Receita",
+    "placeholder": "Ex: Bolo de cenoura com cobertura de chocolate. Ingredientes: 3 cenouras, 3 ovos...",
+    "orImage": "OU envie uma imagem",
+    "dropText": "Clique para enviar foto de um caderno ou cardápio",
+    "imageAttached": "Imagem anexada via colar",
+    "errorTitle": "Erro no Processamento",
+    "errorSafety": "O conteúdo foi bloqueado pelos filtros de segurança da IA.",
+    "errorDefault": "Erro ao processar com IA. Verifique sua chave de API ou tente novamente.",
+    "generate": "Gerar Ficha"
+  },
+  "editor": {
+    "title": "Editor Técnico",
+    "subtitle": "Defina os parâmetros industriais da formulação.",
+    "mainData": "Dados Principais",
+    "productName": "Nome do Produto",
+    "company": "Empresa / Responsável",
+    "creationDate": "Data de Criação",
+    "composition": "Composição",
+    "appearance": "Aparência",
+    "ingredients": "Matéria Prima",
+    "preparation": "Modo de Preparo",
+    "observations": "Observações",
+    "showInFile": "Exibir no arquivo",
+    "emptyHint": "* Deixe em branco caso não queira exibir no arquivo final.",
+    "optionalHint": "* Opcional.",
+    "item": "Item",
+    "itemHeader": "Item",
+    "unitPrice": "R$ Unit.",
+    "totalWeight": "Peso Total",
+    "estimatedCost": "Custo Estimado",
+    "stripedRows": "Linhas Zebradas (Tabela)",
+    "typography": "Tipografia",
+    "a4Preview": "A4 Preview",
+    "previewSize": "210mm x 297mm",
+    "statusLabel": "Status da ficha",
+    "statusDraft": "RASCUNHO",
+    "statusFinal": "FINAL"
+  },
+  "placeholders": {
+    "productName": "Ex: Pão de Leite Especial",
+    "company": "Opcional",
+    "ingredientName": "Nome do ingrediente...",
+    "unitPrice": "0,00",
+    "step": "Descreva este passo...",
+    "observations": "Notas de qualidade, validade, temperatura de forno...",
+    "jsonImportSample": "{\\n  \"nome_formula\": \"Tempero Lemon Pepper\",\\n  \"empresa_responsavel\": \"\",\\n  \"ingredientes\": [\\n    { \"nome\": \"Sal refinado\", \"quantidade\": 12.5, \"unidade\": \"KG\" }\\n  ],\\n  \"modo_preparo\": [],\\n  \"observacoes\": \"\"\\n}"
+  },
+  "preview": {
+    "draftBadge": "Pré-visualização em rascunho",
+    "zoomIn": "Zoom +",
+    "zoomOut": "Zoom -",
+    "zoomReset": "Reset 100%"
+  },
+  "status": {
+    "draft": "RASCUNHO",
+    "final": "FINAL"
+  },
+  "validation": {
+    "totalWeightZero": "Peso total está zerado com ingredientes preenchidos.",
+    "qtyZero": "Quantidade zerada",
+    "unitSolid": "Unidade pode estar em KG/GR para sólidos.",
+    "unitLiquid": "Unidade pode estar em LT/ML para líquidos."
+  },
+  "messages": {
+    "draftExportBlock": "A ficha está como RASCUNHO. Marque como FINAL para exportar.",
+    "draftPdfBlock": "A ficha está como RASCUNHO. Marque como FINAL para exportar PDF.",
+    "exportToolsMissing": "Ferramentas de exportação não disponíveis.",
+    "invalidJson": "JSON inválido. Verifique a estrutura e tente novamente.",
+    "xmlImportError": "Erro ao importar XML.",
+    "jsonImportHelp": "Cole o JSON no formato solicitado. Campos opcionais serão preservados."
+  },
+  "presets": {
+    "title": "Presets",
+    "chimichurri": "Base Chimichurri",
+    "chimichurriDesc": "Estrutura seca com ervas e especiarias.",
+    "lemon": "Base Lemon Pepper",
+    "lemonDesc": "Blend seco com notas cítricas.",
+    "noPrep": "Ficha sem modo de preparo",
+    "noPrepDesc": "Estrutura com modo de preparo desabilitado.",
+    "dry": "Ficha industrial seca",
+    "dryDesc": "Ficha voltada para blends secos."
+  },
+  "history": {
+    "title": "Histórico",
+    "count": "FICHAS"
+  },
+  "printable": {
+    "title": "FORMULAÇÃO TÉCNICA",
+    "subtitle": "Controle de Produção Padronizado",
+    "issueDate": "DATA DE EMISSÃO",
+    "ingredientsTitle": "Ingredientes e Composição",
+    "item": "Item / Insumo",
+    "procedureTitle": "Procedimento Operacional (Modo de Preparo)",
+    "observationsTitle": "Observações Técnicas",
+    "footer": "Documento gerado eletronicamente para uso interno",
+    "watermark": "RASCUNHO"
+  },
+  "settings": {
+    "title": "Configurações",
+    "primaryColor": "Cor Principal",
+    "language": "Idioma"
+  },
+  "languages": {
+    "pt-BR": "Português (Brasil)",
+    "en": "Inglês",
+    "es": "Espanhol"
+  },
+  "themes": {
+    "safetyOrange": "Laranja Segurança",
+    "royalBlue": "Azul Royal",
+    "emeraldGreen": "Verde Esmeralda",
+    "slateDark": "Cinza Ardósia Escuro",
+    "roseRed": "Vermelho Rosa",
+    "violet": "Violeta",
+    "teal": "Verde Azulado",
+    "slate": "Cinza Ardósia"
+  },
+  "fontSizes": {
+    "small": "Pequena",
+    "medium": "Média",
+    "large": "Grande"
+  }
+}

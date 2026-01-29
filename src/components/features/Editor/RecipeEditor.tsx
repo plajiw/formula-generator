@@ -19,8 +19,9 @@ import { Plus, Trash2, Settings2, Calculator, Save, FileText, Building2, AlertTr
 import { useRecipeManager } from '../../../hooks/useRecipeManager';
 import { SortableItem } from '../../common/SortableItem';
 import { RecipePrintable } from '../../RecipePrintable';
-import { FORMULA_THEMES, FORMULA_FONTS, FORMULA_FONT_SIZES } from '../../../constants/themes';
+import { FORMULA_THEMES, FORMULA_FONTS } from '../../../constants/themes';
 import { toISODate } from '../../../utils/dateUtils';
+import { useI18n } from '../../../i18n/i18n.tsx';
 
 interface RecipeEditorProps {
     manager: ReturnType<typeof useRecipeManager>;
@@ -39,6 +40,7 @@ export const RecipeEditor: React.FC<RecipeEditorProps> = ({
     primaryColor,
     focusMode = false
 }) => {
+    const { t } = useI18n();
     const { currentRecipe, setCurrentRecipe, newlyAddedId, validationErrors } = manager;
     const [activeTab, setActiveTab] = useState<'content' | 'style'>('content');
     const previewStageRef = useRef<HTMLDivElement | null>(null);
@@ -82,10 +84,10 @@ export const RecipeEditor: React.FC<RecipeEditorProps> = ({
         const solidKeywords = ['sal', 'açúcar', 'acucar', 'farinha', 'amido', 'pó', 'po', 'pimenta', 'alho', 'cebola', 'temper', 'salsa', 'ervas'];
         const liquidKeywords = ['óleo', 'oleo', 'agua', 'água', 'leite', 'vinagre', 'suco'];
         if ((unidade === 'ML' || unidade === 'LT') && solidKeywords.some((k) => lower.includes(k))) {
-            return 'Unidade pode estar em KG/GR para sólidos.';
+            return t('validation.unitSolid');
         }
         if ((unidade === 'KG' || unidade === 'GR') && liquidKeywords.some((k) => lower.includes(k))) {
-            return 'Unidade pode estar em LT/ML para líquidos.';
+            return t('validation.unitLiquid');
         }
         return '';
     };
@@ -181,39 +183,39 @@ export const RecipeEditor: React.FC<RecipeEditorProps> = ({
                     {/* Header / Actions */}
                     <div className="flex justify-between items-start ds-card p-6">
                         <div>
-                            <h2 className="text-2xl font-black text-slate-800 dark:text-slate-100 uppercase tracking-tight">Editor Técnico</h2>
-                            <p className="text-sm text-slate-500 font-medium mt-1">Defina os parâmetros industriais da formulação.</p>
+                            <h2 className="text-2xl font-black text-slate-800 dark:text-slate-100 uppercase tracking-tight">{t('editor.title')}</h2>
+                            <p className="text-sm text-slate-500 font-medium mt-1">{t('editor.subtitle')}</p>
                             <div className="mt-3 inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-slate-500">
                                 <span className={`px-2 py-0.5 rounded-full border ${currentRecipe.status === 'FINAL' ? 'border-emerald-500 text-emerald-600' : 'border-amber-500 text-amber-600'}`}>
                                     {currentRecipe.status || 'RASCUNHO'}
                                 </span>
-                                <span className="text-slate-400">Status da ficha</span>
+                                <span className="text-slate-400">{t('editor.statusLabel')}</span>
                             </div>
                         </div>
                         <div className="flex gap-3">
                             <button
                                 onClick={() => setShowPreview((prev) => !prev)}
                                 className="px-4 py-2 text-xs font-bold ds-button hover:border-[var(--primary)] hover:text-[var(--primary)] transition-colors flex items-center gap-2"
-                                title={showPreview ? 'Ocultar Preview' : 'Mostrar Preview'}
+                                title={showPreview ? t('buttons.hidePreview') : t('buttons.showPreview')}
                             >
                                 {showPreview ? <EyeOff size={14} /> : <Eye size={14} />}
-                                {showPreview ? 'Ocultar Preview' : 'Mostrar Preview'}
+                                {showPreview ? t('buttons.hidePreview') : t('buttons.showPreview')}
                             </button>
                             <button
                                 onClick={() => setIsMobilePreviewOpen(true)}
                                 className="px-4 py-2 text-xs font-bold ds-button hover:border-[var(--primary)] hover:text-[var(--primary)] transition-colors flex items-center gap-2 lg:hidden"
                             >
-                                <Eye size={14} /> Ver Preview
+                                <Eye size={14} /> {t('buttons.viewPreview')}
                             </button>
                             <button
                                 onClick={() => manager.handleFieldChange('status', currentRecipe.status === 'FINAL' ? 'RASCUNHO' : 'FINAL')}
                                 className={`px-4 py-2 text-xs font-bold rounded-lg border transition ${currentRecipe.status === 'FINAL' ? 'border-emerald-500 text-emerald-600 hover:bg-emerald-50' : 'border-amber-500 text-amber-600 hover:bg-amber-50'}`}
                             >
-                                Marcar como {currentRecipe.status === 'FINAL' ? 'Rascunho' : 'Final'}
+                                {currentRecipe.status === 'FINAL' ? t('buttons.markDraft') : t('buttons.markFinal')}
                             </button>
-                            <button onClick={onCancel} className="px-4 py-2 text-sm font-bold ds-button hover:bg-slate-100 dark:hover:bg-neutral-800 transition">Cancelar</button>
+                            <button onClick={onCancel} className="px-4 py-2 text-sm font-bold ds-button hover:bg-slate-100 dark:hover:bg-neutral-800 transition">{t('common.cancel')}</button>
                             <button onClick={onFinalize} className="px-5 py-2 text-sm font-bold ds-button-primary hover:bg-opacity-90 transition-all flex items-center gap-2">
-                                <Save size={16} /> Salvar Ficha
+                                <Save size={16} /> {t('buttons.saveSheet')}
                             </button>
                         </div>
                     </div>
@@ -222,39 +224,39 @@ export const RecipeEditor: React.FC<RecipeEditorProps> = ({
                     <div className="ds-card p-6 space-y-5">
                         <div className="flex items-center gap-2 mb-2 text-[var(--primary)]">
                             <FileText size={18} />
-                            <span className="text-xs font-bold uppercase tracking-widest">Dados Principais</span>
+                            <span className="text-xs font-bold uppercase tracking-widest">{t('editor.mainData')}</span>
                         </div>
 
                         <div className="space-y-4">
                             {/* Nome do Produto */}
                             <div>
-                                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">Nome do Produto</label>
+                                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">{t('editor.productName')}</label>
                                 <input
                                     className="w-full text-xl font-bold ds-input ds-input-lg focus:border-[var(--primary)] focus:ring-1 focus:ring-[var(--primary)] transition-all placeholder-slate-300"
                                     value={currentRecipe.nome_formula}
                                     onChange={(e) => manager.handleFieldChange('nome_formula', e.target.value)}
-                                    placeholder="Ex: Pão de Leite Especial"
+                                    placeholder={t('placeholders.productName')}
                                 />
                             </div>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                                 {/* Nome da Empresa */}
                                 <div>
-                                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">Empresa / Responsável</label>
+                                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">{t('editor.company')}</label>
                                     <div className="relative">
                                         <Building2 className="absolute left-3 top-2.5 text-slate-400" size={16} />
                                         <input
                                             className="w-full ds-input pl-10 text-sm font-medium focus:border-[var(--primary)] transition-colors"
                                             value={currentRecipe.nome_empresa || ''}
                                             onChange={(e) => manager.handleFieldChange('nome_empresa', e.target.value)}
-                                            placeholder="Opcional"
+                                            placeholder={t('placeholders.company')}
                                         />
                                     </div>
                                 </div>
 
                                 {/* Data */}
                                 <div>
-                                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">Data de Criação</label>
+                                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">{t('editor.creationDate')}</label>
                                     <input
                                         type="date"
                                         className="w-full ds-input text-sm font-medium focus:border-[var(--primary)] transition-colors"
@@ -272,13 +274,13 @@ export const RecipeEditor: React.FC<RecipeEditorProps> = ({
                             onClick={() => setActiveTab('content')}
                             className={`px-6 py-3 text-sm font-bold uppercase tracking-wide border-b-2 transition-colors ${activeTab === 'content' ? 'border-[var(--primary)] text-[var(--primary)]' : 'border-transparent text-slate-400 hover:text-slate-600'}`}
                         >
-                            <div className="flex items-center gap-2"><Calculator size={16} /> Composição</div>
+                            <div className="flex items-center gap-2"><Calculator size={16} /> {t('editor.composition')}</div>
                         </button>
                         <button
                             onClick={() => setActiveTab('style')}
                             className={`px-6 py-3 text-sm font-bold uppercase tracking-wide border-b-2 transition-colors ${activeTab === 'style' ? 'border-[var(--primary)] text-[var(--primary)]' : 'border-transparent text-slate-400 hover:text-slate-600'}`}
                         >
-                            <div className="flex items-center gap-2"><Settings2 size={16} /> Aparência</div>
+                            <div className="flex items-center gap-2"><Settings2 size={16} /> {t('editor.appearance')}</div>
                         </button>
                     </div>
 
@@ -290,10 +292,10 @@ export const RecipeEditor: React.FC<RecipeEditorProps> = ({
                             <div className="ds-card overflow-hidden">
                                 <div className="p-4 bg-slate-50 dark:bg-neutral-900/50 border-b border-slate-200 dark:border-neutral-800 flex justify-between items-center">
                                     <div className="flex items-center gap-2">
-                                        <h3 className="text-sm font-bold uppercase tracking-wide text-slate-700 dark:text-slate-300">Matéria Prima</h3>
+                                        <h3 className="text-sm font-bold uppercase tracking-wide text-slate-700 dark:text-slate-300">{t('editor.ingredients')}</h3>
                                     </div>
                                         <button onClick={manager.addIngredient} className="text-xs font-bold text-[var(--primary)] bg-[var(--primary)]/10 px-3 py-1.5 rounded-lg hover:bg-[var(--primary)] hover:text-white transition-colors flex items-center gap-1">
-                                            <Plus size={14} /> Adicionar Item
+                                        <Plus size={14} /> {t('buttons.addItem')}
                                         </button>
                                 </div>
 
@@ -301,17 +303,17 @@ export const RecipeEditor: React.FC<RecipeEditorProps> = ({
                                     {hasFilledIngredients && totalWeight === 0 && (
                                         <div className="mx-2 mb-2 flex items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-700">
                                             <AlertTriangle size={14} />
-                                            Peso total está zerado com ingredientes preenchidos.
+                                            {t('validation.totalWeightZero')}
                                         </div>
                                     )}
                                     {/* Header Row */}
                                     <div className="grid grid-cols-12 gap-2 px-3 py-2 text-[10px] font-bold text-slate-400 uppercase tracking-wider text-center">
                                         <div className="col-span-1 hidden sm:block">#</div>
                                         <div className="col-span-1 block sm:hidden"></div>
-                                        <div className="col-span-5 text-left">Item</div>
-                                        <div className="col-span-2">Qtd</div>
-                                        <div className="col-span-2">Unid</div>
-                                        <div className="col-span-2">R$ Unit.</div>
+                                        <div className="col-span-5 text-left">{t('editor.itemHeader')}</div>
+                                        <div className="col-span-2">{t('common.qty')}</div>
+                                        <div className="col-span-2">{t('common.unit')}</div>
+                                        <div className="col-span-2">{t('editor.unitPrice')}</div>
                                     </div>
 
                                     <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEndIngredients} modifiers={[restrictToVerticalAxis]}>
@@ -337,7 +339,7 @@ export const RecipeEditor: React.FC<RecipeEditorProps> = ({
                                                                     className="w-full h-9 ds-input text-sm font-medium focus:border-[var(--primary)] transition-colors"
                                                                     value={ing.nome}
                                                                     onChange={(e) => manager.updateIngredient(ing.id, 'nome', e.target.value)}
-                                                                    placeholder="Nome do ingrediente..."
+                                                                    placeholder={t('placeholders.ingredientName')}
                                                                 />
                                                                 <div className="min-h-[16px] text-[10px] text-slate-400 font-mono mt-0.5 ml-1">{pct.toFixed(1)}%</div>
                                                             </div>
@@ -353,7 +355,7 @@ export const RecipeEditor: React.FC<RecipeEditorProps> = ({
                                                                         }}
                                                                     />
                                                                     <div className="min-h-[16px] mt-1 text-[10px] text-amber-600 flex items-center gap-1">
-                                                                        {ing.quantidade === 0 && (<><AlertTriangle size={12} /> Quantidade zerada</>)}
+                                                                        {ing.quantidade === 0 && (<><AlertTriangle size={12} /> {t('validation.qtyZero')}</>)}
                                                                     </div>
                                                                 </div>
                                                             </div>
@@ -373,11 +375,11 @@ export const RecipeEditor: React.FC<RecipeEditorProps> = ({
                                                             </div>
                                                             <div className="col-span-2">
                                                                 <div className="min-h-[56px] flex items-center gap-1">
-                                                                    <span className="text-xs text-slate-400">R$</span>
+                                                                <span className="text-xs text-slate-400">{t('common.currency')}</span>
                                                                     <input
                                                                         type="number"
                                                                         className="w-full h-9 bg-transparent text-right text-xs font-mono outline-none border-b border-transparent focus:border-[var(--primary)]"
-                                                                        placeholder="0.00"
+                                                                        placeholder={t('placeholders.unitPrice')}
                                                                         value={ing.custo_unitario || ''}
                                                                         onChange={(e) => manager.updateIngredient(ing.id, 'custo_unitario', parseFloat(e.target.value) || 0)}
                                                                     />
@@ -401,12 +403,12 @@ export const RecipeEditor: React.FC<RecipeEditorProps> = ({
                                 {/* Totals Footer */}
                                 <div className="bg-slate-100 dark:bg-neutral-900/50 p-4 border-t border-slate-200 dark:border-neutral-800 flex justify-between items-center">
                                     <div>
-                                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Peso Total</p>
-                                        <p className="text-xl font-mono font-bold text-slate-700 dark:text-slate-200">{totalWeight.toFixed(3)} <span className="text-sm text-slate-400">UNIT</span></p>
+                                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{t('editor.totalWeight')}</p>
+                                        <p className="text-xl font-mono font-bold text-slate-700 dark:text-slate-200">{totalWeight.toFixed(3)} <span className="text-sm text-slate-400">{t('common.unit')}</span></p>
                                     </div>
                                     <div className="text-right">
-                                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Custo Estimado</p>
-                                        <p className="text-xl font-mono font-bold text-emerald-600 dark:text-emerald-400">R$ {totalCost.toFixed(2)}</p>
+                                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{t('editor.estimatedCost')}</p>
+                                        <p className="text-xl font-mono font-bold text-emerald-600 dark:text-emerald-400">{t('common.currency')} {totalCost.toFixed(2)}</p>
                                     </div>
                                 </div>
 
@@ -416,7 +418,7 @@ export const RecipeEditor: React.FC<RecipeEditorProps> = ({
                             <div className="ds-card p-6">
                                 <div className="flex flex-wrap justify-between items-center gap-3 mb-4">
                                     <div className="flex items-center gap-3">
-                                        <h3 className="text-sm font-bold uppercase tracking-wide text-slate-700 dark:text-slate-300">Modo de Preparo</h3>
+                                        <h3 className="text-sm font-bold uppercase tracking-wide text-slate-700 dark:text-slate-300">{t('editor.preparation')}</h3>
                                         <label className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-slate-500">
                                             <input
                                                 type="checkbox"
@@ -424,11 +426,11 @@ export const RecipeEditor: React.FC<RecipeEditorProps> = ({
                                                 onChange={(e) => manager.handleFieldChange('exibir_modo_preparo', e.target.checked)}
                                                 className="w-4 h-4 rounded border-slate-300 text-[var(--primary)] focus:ring-[var(--primary)] cursor-pointer"
                                             />
-                                            Exibir no arquivo
+                                            {t('editor.showInFile')}
                                         </label>
                                     </div>
                                     <button onClick={manager.addStep} className="text-xs font-bold text-[var(--primary)] hover:underline flex items-center gap-1">
-                                        <Plus size={14} /> Adicionar Passo
+                                        <Plus size={14} /> {t('buttons.addStep')}
                                     </button>
                                 </div>
 
@@ -445,7 +447,7 @@ export const RecipeEditor: React.FC<RecipeEditorProps> = ({
                                                             className="flex-1 min-w-0 w-full bg-transparent text-sm outline-none resize-none min-h-[36px] leading-6 border-b border-transparent focus:border-[var(--primary)] transition-colors"
                                                             value={step.text}
                                                             onChange={(e) => manager.updateStep(step.id, e.target.value)}
-                                                            placeholder="Descreva este passo..."
+                                                            placeholder={t('placeholders.step')}
                                                         />
                                                         <button
                                                             onClick={() => manager.removeStep(step.id)}
@@ -459,13 +461,13 @@ export const RecipeEditor: React.FC<RecipeEditorProps> = ({
                                         </div>
                                     </SortableContext>
                                 </DndContext>
-                                <p className="text-[10px] text-slate-400 mt-4 italic">* Deixe em branco caso não queira exibir no arquivo final.</p>
+                                <p className="text-[10px] text-slate-400 mt-4 italic">{t('editor.emptyHint')}</p>
                             </div>
 
                             {/* Observations */}
                             <div className="ds-card p-6 space-y-2">
                                 <div className="flex flex-wrap items-center gap-3">
-                                    <h3 className="text-sm font-bold uppercase tracking-wide text-slate-700 dark:text-slate-300">Observações</h3>
+                                    <h3 className="text-sm font-bold uppercase tracking-wide text-slate-700 dark:text-slate-300">{t('editor.observations')}</h3>
                                     <label className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-slate-500">
                                         <input
                                             type="checkbox"
@@ -473,16 +475,16 @@ export const RecipeEditor: React.FC<RecipeEditorProps> = ({
                                             onChange={(e) => manager.handleFieldChange('exibir_observacoes', e.target.checked)}
                                             className="w-4 h-4 rounded border-slate-300 text-[var(--primary)] focus:ring-[var(--primary)] cursor-pointer"
                                         />
-                                        Exibir no arquivo
+                                        {t('editor.showInFile')}
                                     </label>
                                 </div>
                                 <textarea
                                     className="w-full min-w-0 ds-textarea text-sm focus:ring-1 focus:ring-amber-200 transition-all"
-                                    placeholder="Notas de qualidade, validade, temperatura de forno..."
+                                    placeholder={t('placeholders.observations')}
                                     value={currentRecipe.observacoes}
                                     onChange={(e) => manager.handleFieldChange('observacoes', e.target.value)}
                                 />
-                                <p className="text-[10px] text-slate-400 italic">* Opicional.</p>
+                                <p className="text-[10px] text-slate-400 italic">{t('editor.optionalHint')}</p>
                             </div>
 
                         </div>
@@ -494,18 +496,18 @@ export const RecipeEditor: React.FC<RecipeEditorProps> = ({
                             <div className="grid grid-cols-2 gap-4">
                                 {FORMULA_THEMES.map((theme) => (
                                     <button
-                                        key={theme.name}
+                                        key={theme.nameKey}
                                         onClick={() => manager.handleFieldChange('accentColor', theme.color)}
                                         className={`h-12 rounded-xl border flex items-center justify-center font-bold text-sm transition ${currentRecipe.accentColor === theme.color ? 'border-[var(--primary)] bg-[var(--primary)]/5 text-[var(--primary)] shadow-sm' : 'border-slate-200 dark:border-neutral-800 text-slate-500 hover:bg-slate-50 dark:hover:bg-neutral-800'}`}
                                     >
                                         <div className="w-3 h-3 rounded-full mr-2" style={{ backgroundColor: theme.color }}></div>
-                                        {theme.name}
+                                        {t(theme.nameKey)}
                                     </button>
                                 ))}
                             </div>
 
                             <div className="space-y-3 p-6 ds-card">
-                                <label className="text-xs font-bold text-slate-400 uppercase tracking-widest">Tipografia</label>
+                                <label className="text-xs font-bold text-slate-400 uppercase tracking-widest">{t('editor.typography')}</label>
                                 <select
                                     className="w-full ds-select p-3 text-sm font-medium"
                                     value={currentRecipe.fontFamily || FORMULA_FONTS[0].value}
@@ -525,7 +527,7 @@ export const RecipeEditor: React.FC<RecipeEditorProps> = ({
                                     onChange={(e) => manager.handleFieldChange('stripedRows', e.target.checked)}
                                     className="w-5 h-5 rounded border-gray-300 text-[var(--primary)] focus:ring-[var(--primary)] cursor-pointer"
                                 />
-                                <label htmlFor="striped" className="text-sm font-bold text-slate-700 dark:text-white cursor-pointer">Linhas Zebradas (Tabela)</label>
+                                <label htmlFor="striped" className="text-sm font-bold text-slate-700 dark:text-white cursor-pointer">{t('editor.stripedRows')}</label>
                             </div>
                         </div>
                     )}
@@ -548,31 +550,31 @@ export const RecipeEditor: React.FC<RecipeEditorProps> = ({
                 <div className="p-4 border-b border-slate-200 dark:border-neutral-800 flex justify-between items-center bg-white/50 dark:bg-neutral-900/50 backdrop-blur-sm z-10">
                     <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
                         <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
-                        A4 Preview
+                        {t('editor.a4Preview')}
                     </h3>
                     <div className="flex items-center gap-2">
                         <button
                             onClick={() => setZoomFactor((z) => Math.max(0.7, Number((z - 0.1).toFixed(2))))}
                             className="ds-icon-button"
-                            title="Zoom -"
+                            title={t('preview.zoomOut')}
                         >
                             <ZoomOut size={14} />
                         </button>
                         <button
                             onClick={() => setZoomFactor(1)}
                             className="ds-icon-button"
-                            title="Reset 100%"
+                            title={t('preview.zoomReset')}
                         >
                             <RotateCcw size={14} />
                         </button>
                         <button
                             onClick={() => setZoomFactor((z) => Math.min(1.6, Number((z + 0.1).toFixed(2))))}
                             className="ds-icon-button"
-                            title="Zoom +"
+                            title={t('preview.zoomIn')}
                         >
                             <ZoomIn size={14} />
                         </button>
-                        <span className="text-[10px] bg-slate-200 dark:bg-neutral-800 text-slate-500 px-2 py-1 rounded font-mono">210mm x 297mm</span>
+                        <span className="text-[10px] bg-slate-200 dark:bg-neutral-800 text-slate-500 px-2 py-1 rounded font-mono">{t('editor.previewSize')}</span>
                     </div>
                 </div>
 
@@ -604,7 +606,7 @@ export const RecipeEditor: React.FC<RecipeEditorProps> = ({
                 <div className="fixed inset-0 z-[220] bg-black/50 backdrop-blur-sm lg:hidden">
                     <div className="absolute inset-0 flex flex-col bg-white dark:bg-neutral-950">
                         <div className="p-4 border-b border-slate-200 dark:border-neutral-800 flex items-center justify-between">
-                            <h3 className="text-sm font-bold text-slate-700 dark:text-slate-200">Preview</h3>
+                            <h3 className="text-sm font-bold text-slate-700 dark:text-slate-200">{t('common.preview')}</h3>
                             <button
                                 onClick={() => setIsMobilePreviewOpen(false)}
                                 className="ds-icon-button"

@@ -1,0 +1,185 @@
+{
+  "common": {
+    "appName": "FormulaPro",
+    "systemTitle": "INDUSTRIAL STANDARDIZATION SYSTEM",
+    "version": "v1.0.0-stable",
+    "systemReady": "SYSTEM: READY",
+    "optional": "Optional",
+    "date": "Date",
+    "unit": "Unit",
+    "qty": "Qty",
+    "currency": "$",
+    "close": "Close",
+    "cancel": "Cancel",
+    "save": "Save",
+    "back": "Back",
+    "edit": "Edit",
+    "loading": "Processing...",
+    "preview": "Preview",
+    "file": "File"
+  },
+  "buttons": {
+    "newSheet": "New Sheet",
+    "openWizard": "AI Assistant",
+    "importXml": "Import XML",
+    "importJson": "Import JSON",
+    "presets": "Presets",
+    "addItem": "Add Item",
+    "addStep": "Add Step",
+    "saveSheet": "Save Sheet",
+    "exportXml": "Export XML",
+    "exportPdf": "Export PDF",
+    "print": "Print",
+    "showPreview": "Show Preview",
+    "hidePreview": "Hide Preview",
+    "viewPreview": "View Preview",
+    "focusMode": "Focus Mode",
+    "exitFocusMode": "Exit Focus Mode",
+    "markFinal": "Mark as Final",
+    "markDraft": "Mark as Draft"
+  },
+  "nav": {
+    "backToHub": "Back to Hub",
+    "settings": "Settings"
+  },
+  "hub": {
+    "recent": "Recent",
+    "viewAll": "View All",
+    "empty": "NO DATA REGISTERED",
+    "newSheetDesc": "Create a technical formulation from scratch.",
+    "wizardDesc": "Generate from photo or raw text.",
+    "importXmlDesc": "Load local file backup.",
+    "importJsonDesc": "Paste JSON structure to load.",
+    "presetsDesc": "Create a base sheet ready to edit.",
+    "start": "Start",
+    "access": "Access",
+    "upload": "Upload",
+    "paste": "Paste",
+    "choose": "Choose"
+  },
+  "wizard": {
+    "title": "AI Assistant",
+    "subtitle": "Describe your recipe or send a photo",
+    "label": "Describe the Recipe",
+    "placeholder": "Ex: Carrot cake with chocolate topping. Ingredients: 3 carrots, 3 eggs...",
+    "orImage": "OR send an image",
+    "dropText": "Click to upload a photo of a notebook or menu",
+    "imageAttached": "Image attached via paste",
+    "errorTitle": "Processing Error",
+    "errorSafety": "The content was blocked by AI safety filters.",
+    "errorDefault": "Error processing with AI. Check your API key or try again.",
+    "generate": "Generate Sheet"
+  },
+  "editor": {
+    "title": "Technical Editor",
+    "subtitle": "Define the industrial formulation parameters.",
+    "mainData": "Main Data",
+    "productName": "Product Name",
+    "company": "Company / Responsible",
+    "creationDate": "Creation Date",
+    "composition": "Composition",
+    "appearance": "Appearance",
+    "ingredients": "Ingredients",
+    "preparation": "Preparation",
+    "observations": "Observations",
+    "showInFile": "Show in file",
+    "emptyHint": "* Leave blank if you do not want to show in the final file.",
+    "optionalHint": "* Optional.",
+    "item": "Item",
+    "itemHeader": "Item",
+    "unitPrice": "Unit Price",
+    "totalWeight": "Total Weight",
+    "estimatedCost": "Estimated Cost",
+    "stripedRows": "Striped Rows (Table)",
+    "typography": "Typography",
+    "a4Preview": "A4 Preview",
+    "previewSize": "210mm x 297mm",
+    "statusLabel": "Sheet status",
+    "statusDraft": "DRAFT",
+    "statusFinal": "FINAL"
+  },
+  "placeholders": {
+    "productName": "Ex: Special Milk Bread",
+    "company": "Optional",
+    "ingredientName": "Ingredient name...",
+    "unitPrice": "0.00",
+    "step": "Describe this step...",
+    "observations": "Quality notes, shelf life, oven temperature...",
+    "jsonImportSample": "{\\n  \"nome_formula\": \"Lemon Pepper Seasoning\",\\n  \"empresa_responsavel\": \"\",\\n  \"ingredientes\": [\\n    { \"nome\": \"Refined salt\", \"quantidade\": 12.5, \"unidade\": \"KG\" }\\n  ],\\n  \"modo_preparo\": [],\\n  \"observacoes\": \"\"\\n}"
+  },
+  "preview": {
+    "draftBadge": "Draft preview",
+    "zoomIn": "Zoom +",
+    "zoomOut": "Zoom -",
+    "zoomReset": "Reset 100%"
+  },
+  "status": {
+    "draft": "DRAFT",
+    "final": "FINAL"
+  },
+  "validation": {
+    "totalWeightZero": "Total weight is zero with filled ingredients.",
+    "qtyZero": "Quantity is zero",
+    "unitSolid": "Unit may be KG/GR for solids.",
+    "unitLiquid": "Unit may be LT/ML for liquids."
+  },
+  "messages": {
+    "draftExportBlock": "This sheet is DRAFT. Mark as FINAL to export.",
+    "draftPdfBlock": "This sheet is DRAFT. Mark as FINAL to export PDF.",
+    "exportToolsMissing": "Export tools not available.",
+    "invalidJson": "Invalid JSON. Check the structure and try again.",
+    "xmlImportError": "Error importing XML.",
+    "jsonImportHelp": "Paste the JSON in the required format. Optional fields will be preserved."
+  },
+  "presets": {
+    "title": "Presets",
+    "chimichurri": "Chimichurri Base",
+    "chimichurriDesc": "Dry structure with herbs and spices.",
+    "lemon": "Lemon Pepper Base",
+    "lemonDesc": "Dry blend with citrus notes.",
+    "noPrep": "Sheet without preparation",
+    "noPrepDesc": "Structure with preparation disabled.",
+    "dry": "Dry industrial sheet",
+    "dryDesc": "Sheet for dry blends."
+  },
+  "history": {
+    "title": "History",
+    "count": "SHEETS"
+  },
+  "printable": {
+    "title": "TECHNICAL FORMULATION",
+    "subtitle": "Standardized Production Control",
+    "issueDate": "ISSUE DATE",
+    "ingredientsTitle": "Ingredients and Composition",
+    "item": "Item / Input",
+    "procedureTitle": "Operational Procedure (Preparation)",
+    "observationsTitle": "Technical Observations",
+    "footer": "Document generated electronically for internal use",
+    "watermark": "DRAFT"
+  },
+  "settings": {
+    "title": "Settings",
+    "primaryColor": "Primary Color",
+    "language": "Language"
+  },
+  "languages": {
+    "pt-BR": "Portuguese (Brazil)",
+    "en": "English",
+    "es": "Spanish"
+  },
+  "themes": {
+    "safetyOrange": "Safety Orange",
+    "royalBlue": "Royal Blue",
+    "emeraldGreen": "Emerald Green",
+    "slateDark": "Dark Slate",
+    "roseRed": "Rose Red",
+    "violet": "Violet",
+    "teal": "Teal",
+    "slate": "Slate"
+  },
+  "fontSizes": {
+    "small": "Small",
+    "medium": "Medium",
+    "large": "Large"
+  }
+}

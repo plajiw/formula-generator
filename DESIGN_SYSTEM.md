@@ -116,8 +116,8 @@ Regras:
 - Tokens visuais só em `index.html`.
 
 ## 9. Checklist de consistência
-- [ ] Inputs com `ds-input` / `ds-select`
-- [ ] Botões com `ds-button` / `ds-button-primary`
-- [ ] Cards com `ds-card`
-- [ ] Ícones apenas lucide-react
-- [ ] Preview controlável e não invasivo
+- [x] Inputs com `ds-input` / `ds-select`
+- [x] Botões com `ds-button` / `ds-button-primary`
+- [x] Cards com `ds-card`
+- [x] Ícones apenas lucide-react
+- [x] Preview controlável e não invasivo

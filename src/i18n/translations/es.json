@@ -1,0 +1,185 @@
+{
+  "common": {
+    "appName": "FormulaPro",
+    "systemTitle": "SISTEMA DE ESTANDARIZACIÓN INDUSTRIAL",
+    "version": "v1.0.0-stable",
+    "systemReady": "SYSTEM: READY",
+    "optional": "Opcional",
+    "date": "Fecha",
+    "unit": "Unid.",
+    "qty": "Cant.",
+    "currency": "R$",
+    "close": "Cerrar",
+    "cancel": "Cancelar",
+    "save": "Guardar",
+    "back": "Volver",
+    "edit": "Editar",
+    "loading": "Procesando...",
+    "preview": "Vista previa",
+    "file": "Archivo"
+  },
+  "buttons": {
+    "newSheet": "Nueva Ficha",
+    "openWizard": "Asistente IA",
+    "importXml": "Importar XML",
+    "importJson": "Importar JSON",
+    "presets": "Presets",
+    "addItem": "Agregar Ítem",
+    "addStep": "Agregar Paso",
+    "saveSheet": "Guardar Ficha",
+    "exportXml": "Exportar XML",
+    "exportPdf": "Exportar PDF",
+    "print": "Imprimir",
+    "showPreview": "Mostrar Vista",
+    "hidePreview": "Ocultar Vista",
+    "viewPreview": "Ver Vista",
+    "focusMode": "Modo Foco",
+    "exitFocusMode": "Salir del Modo Foco",
+    "markFinal": "Marcar como Final",
+    "markDraft": "Marcar como Borrador"
+  },
+  "nav": {
+    "backToHub": "Volver al Hub",
+    "settings": "Configuraciones"
+  },
+  "hub": {
+    "recent": "Recientes",
+    "viewAll": "Ver Todos",
+    "empty": "SIN DATOS REGISTRADOS",
+    "newSheetDesc": "Crear formulación técnica desde cero.",
+    "wizardDesc": "Generar a partir de foto o texto bruto.",
+    "importXmlDesc": "Cargar respaldo de archivo local.",
+    "importJsonDesc": "Pegar estructura JSON para cargar.",
+    "presetsDesc": "Crear ficha base lista para editar.",
+    "start": "Iniciar",
+    "access": "Acceder",
+    "upload": "Subir",
+    "paste": "Pegar",
+    "choose": "Elegir"
+  },
+  "wizard": {
+    "title": "Asistente IA",
+    "subtitle": "Describa su receta o envíe una foto",
+    "label": "Describa la Receta",
+    "placeholder": "Ej: Torta de zanahoria con cobertura de chocolate. Ingredientes: 3 zanahorias, 3 huevos...",
+    "orImage": "O envíe una imagen",
+    "dropText": "Haga clic para enviar una foto de un cuaderno o menú",
+    "imageAttached": "Imagen adjunta por pegado",
+    "errorTitle": "Error de Procesamiento",
+    "errorSafety": "El contenido fue bloqueado por los filtros de seguridad de la IA.",
+    "errorDefault": "Error al procesar con IA. Verifique su clave o intente nuevamente.",
+    "generate": "Generar Ficha"
+  },
+  "editor": {
+    "title": "Editor Técnico",
+    "subtitle": "Defina los parámetros industriales de la formulación.",
+    "mainData": "Datos Principales",
+    "productName": "Nombre del Producto",
+    "company": "Empresa / Responsable",
+    "creationDate": "Fecha de Creación",
+    "composition": "Composición",
+    "appearance": "Apariencia",
+    "ingredients": "Materia Prima",
+    "preparation": "Modo de Preparación",
+    "observations": "Observaciones",
+    "showInFile": "Mostrar en el archivo",
+    "emptyHint": "* Deje en blanco si no desea mostrar en el archivo final.",
+    "optionalHint": "* Opcional.",
+    "item": "Ítem",
+    "itemHeader": "Ítem",
+    "unitPrice": "Precio Unit.",
+    "totalWeight": "Peso Total",
+    "estimatedCost": "Costo Estimado",
+    "stripedRows": "Filas Alternadas (Tabla)",
+    "typography": "Tipografía",
+    "a4Preview": "Vista A4",
+    "previewSize": "210mm x 297mm",
+    "statusLabel": "Estado de la ficha",
+    "statusDraft": "BORRADOR",
+    "statusFinal": "FINAL"
+  },
+  "placeholders": {
+    "productName": "Ej: Pan de Leche Especial",
+    "company": "Opcional",
+    "ingredientName": "Nombre del ingrediente...",
+    "unitPrice": "0,00",
+    "step": "Describa este paso...",
+    "observations": "Notas de calidad, validez, temperatura de horno...",
+    "jsonImportSample": "{\\n  \"nome_formula\": \"Condimento Lemon Pepper\",\\n  \"empresa_responsavel\": \"\",\\n  \"ingredientes\": [\\n    { \"nome\": \"Sal refinado\", \"quantidade\": 12.5, \"unidade\": \"KG\" }\\n  ],\\n  \"modo_preparo\": [],\\n  \"observacoes\": \"\"\\n}"
+  },
+  "preview": {
+    "draftBadge": "Vista en borrador",
+    "zoomIn": "Zoom +",
+    "zoomOut": "Zoom -",
+    "zoomReset": "Restablecer 100%"
+  },
+  "status": {
+    "draft": "BORRADOR",
+    "final": "FINAL"
+  },
+  "validation": {
+    "totalWeightZero": "El peso total es cero con ingredientes completados.",
+    "qtyZero": "Cantidad en cero",
+    "unitSolid": "La unidad puede ser KG/GR para sólidos.",
+    "unitLiquid": "La unidad puede ser LT/ML para líquidos."
+  },
+  "messages": {
+    "draftExportBlock": "La ficha está en BORRADOR. Márquela como FINAL para exportar.",
+    "draftPdfBlock": "La ficha está en BORRADOR. Márquela como FINAL para exportar PDF.",
+    "exportToolsMissing": "Herramientas de exportación no disponibles.",
+    "invalidJson": "JSON inválido. Verifique la estructura e intente nuevamente.",
+    "xmlImportError": "Error al importar XML.",
+    "jsonImportHelp": "Pegue el JSON en el formato solicitado. Los campos opcionales se conservarán."
+  },
+  "presets": {
+    "title": "Presets",
+    "chimichurri": "Base Chimichurri",
+    "chimichurriDesc": "Estructura seca con hierbas y especias.",
+    "lemon": "Base Lemon Pepper",
+    "lemonDesc": "Mezcla seca con notas cítricas.",
+    "noPrep": "Ficha sin modo de preparación",
+    "noPrepDesc": "Estructura con modo de preparación deshabilitado.",
+    "dry": "Ficha industrial seca",
+    "dryDesc": "Ficha para mezclas secas."
+  },
+  "history": {
+    "title": "Historial",
+    "count": "FICHAS"
+  },
+  "printable": {
+    "title": "FORMULACIÓN TÉCNICA",
+    "subtitle": "Control de Producción Estandarizado",
+    "issueDate": "FECHA DE EMISIÓN",
+    "ingredientsTitle": "Ingredientes y Composición",
+    "item": "Ítem / Insumo",
+    "procedureTitle": "Procedimiento Operativo (Modo de Preparación)",
+    "observationsTitle": "Observaciones Técnicas",
+    "footer": "Documento generado electrónicamente para uso interno",
+    "watermark": "BORRADOR"
+  },
+  "settings": {
+    "title": "Configuraciones",
+    "primaryColor": "Color Principal",
+    "language": "Idioma"
+  },
+  "languages": {
+    "pt-BR": "Portugués (Brasil)",
+    "en": "Inglés",
+    "es": "Español"
+  },
+  "themes": {
+    "safetyOrange": "Naranja de Seguridad",
+    "royalBlue": "Azul Real",
+    "emeraldGreen": "Verde Esmeralda",
+    "slateDark": "Pizarra Oscura",
+    "roseRed": "Rojo Rosado",
+    "violet": "Violeta",
+    "teal": "Verde Azulado",
+    "slate": "Pizarra"
+  },
+  "fontSizes": {
+    "small": "Pequeña",
+    "medium": "Mediana",
+    "large": "Grande"
+  }
+}

@@ -2,17 +2,17 @@ import React, { useState } from 'react';
 import { parseRecipe } from '../services/geminiService';
 import { Recipe } from '../types';
 
-export const useAIWizard = (onRecipeGenerated: (recipe: Recipe) => void) => {
+export const useAIWizard = (onRecipeGenerated: (recipe: Recipe) => void, locale: string) => {
     const [isOpen, setIsOpen] = useState(false);
     const [inputText, setInputText] = useState('');
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [isProcessing, setIsProcessing] = useState(false);
-    const [error, setError] = useState<string | null>(null);
+    const [errorKey, setErrorKey] = useState<string | null>(null);
 
     const reset = () => {
         setInputText('');
         setSelectedFile(null);
-        setError(null);
+        setErrorKey(null);
         setIsProcessing(false);
     };
 
@@ -40,7 +40,7 @@ export const useAIWizard = (onRecipeGenerated: (recipe: Recipe) => void) => {
         if (!inputText && !selectedFile) return;
 
         setIsProcessing(true);
-        setError(null);
+        setErrorKey(null);
 
         try {
             let modelInput: string | { data: string; mimeType: string } = inputText;
@@ -64,16 +64,16 @@ export const useAIWizard = (onRecipeGenerated: (recipe: Recipe) => void) => {
                 };
             }
 
-            const generatedRecipe = await parseRecipe(modelInput);
+            const generatedRecipe = await parseRecipe(modelInput, locale);
             onRecipeGenerated(generatedRecipe);
             close();
         } catch (err: any) {
             console.error("Wizard error:", err);
             // Fallback for demo purposes if API fails? Original code didn't have fallback.
             if (err.message?.includes('SAFETY')) {
-                setError('O conteúdo foi bloqueado pelos filtros de segurança da IA.');
+                setErrorKey('wizard.errorSafety');
             } else {
-                setError('Erro ao processar com IA. Verifique sua chave de API ou tente novamente.');
+                setErrorKey('wizard.errorDefault');
             }
         } finally {
             setIsProcessing(false);
@@ -90,7 +90,7 @@ export const useAIWizard = (onRecipeGenerated: (recipe: Recipe) => void) => {
         handleFileChange,
         setSelectedFile: setPastedFile,
         isProcessing,
-        error,
+        errorKey,
         processWizard
     };
 };

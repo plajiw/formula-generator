@@ -1,4 +1,4 @@
-import React, { useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { ArrowLeft, ArrowRight, FlaskConical, Settings, X } from 'lucide-react';
 import { useTheme } from './hooks/useTheme';
 import { useHistory } from './hooks/useHistory';
@@ -13,6 +13,8 @@ import { RecipePrintable } from './components/RecipePrintable';
 import { exportToXML, parseXML } from './services/xmlService';
 import { Recipe } from './types';
 import { isoToday } from './utils/dateUtils';
+import { useI18n } from './i18n/i18n.tsx';
+import { PRESETS, PresetData } from './constants/presets';
 
 type ViewState = 'HUB' | 'EDITOR' | 'PREVIEW' | 'HISTORY';
 
@@ -22,6 +24,8 @@ const App: React.FC = () => {
         animationsEnabled,
         UI_THEMES
     } = useTheme();
+
+    const { t, locale, setLocale } = useI18n();
 
     const {
         history,
@@ -39,7 +43,7 @@ const App: React.FC = () => {
         setView('EDITOR');
     };
 
-    const wizard = useAIWizard(handleAiGenerated);
+    const wizard = useAIWizard(handleAiGenerated, locale);
 
     const [view, setView] = useState<ViewState>('HUB');
 
@@ -50,65 +54,6 @@ const App: React.FC = () => {
     const [isPresetsOpen, setIsPresetsOpen] = useState(false);
     const [isFocusMode, setIsFocusMode] = useState(false);
     const previewRef = useRef<HTMLDivElement | null>(null);
-
-    const PRESETS = [
-        {
-            id: 'chimichurri-base',
-            name: 'Base Chimichurri',
-            description: 'Estrutura seca com ervas e especiarias.',
-            data: {
-                nome_formula: 'Base Chimichurri',
-                ingredientes: [
-                    { nome: 'Salsa desidratada', quantidade: 10, unidade: 'KG' },
-                    { nome: 'Alho granulado', quantidade: 5, unidade: 'KG' },
-                    { nome: 'Cebola granulada', quantidade: 4, unidade: 'KG' },
-                    { nome: 'Pimenta do reino', quantidade: 1, unidade: 'KG' },
-                    { nome: 'Sal refinado', quantidade: 8, unidade: 'KG' }
-                ],
-                modo_preparo: [],
-                observacoes: 'Base seca. Ajustar proporções conforme necessidade.'
-            }
-        },
-        {
-            id: 'lemon-pepper-base',
-            name: 'Base Lemon Pepper',
-            description: 'Blend seco com notas cítricas.',
-            data: {
-                nome_formula: 'Base Lemon Pepper',
-                ingredientes: [
-                    { nome: 'Sal refinado', quantidade: 12, unidade: 'KG' },
-                    { nome: 'Pimenta do reino moída', quantidade: 2, unidade: 'KG' },
-                    { nome: 'Aroma de limão em pó', quantidade: 0.5, unidade: 'KG' }
-                ],
-                modo_preparo: [],
-                observacoes: 'Ficha base. Completar com aditivos conforme uso.'
-            }
-        },
-        {
-            id: 'sem-modo-preparo',
-            name: 'Ficha sem modo de preparo',
-            description: 'Estrutura com modo de preparo desabilitado.',
-            data: {
-                nome_formula: 'Ficha sem modo de preparo',
-                ingredientes: [],
-                modo_preparo: [],
-                exibir_modo_preparo: false,
-                observacoes: ''
-            }
-        },
-        {
-            id: 'industrial-seco',
-            name: 'Ficha industrial seca',
-            description: 'Ficha voltada para blends secos.',
-            data: {
-                nome_formula: 'Ficha industrial seca',
-                ingredientes: [],
-                modo_preparo: [],
-                observacoes: 'Documento apresenta apenas a composição de ingredientes.',
-                exibir_modo_preparo: false
-            }
-        }
-    ];
 
     // XML Import Logic (Local wrapper)
     const handleXmlImport = async () => {
@@ -124,7 +69,7 @@ const App: React.FC = () => {
                     saveToHistory(recipe);
                     setView('PREVIEW');
                 } catch (err) {
-                    alert('Erro ao importar XML invalid');
+                    alert(t('messages.xmlImportError'));
                 }
             }
         };
@@ -140,10 +85,10 @@ const App: React.FC = () => {
         setIsPresetsOpen(true);
     };
 
-    const handleApplyPreset = (preset: any) => {
+    const handleApplyPreset = (preset: PresetData & { nameValueKey?: string }) => {
         const recipe: Recipe = {
             id: crypto.randomUUID(),
-            nome_formula: String(preset.nome_formula || '').trim(),
+            nome_formula: t(preset.nameValueKey || ''),
             nome_empresa: '',
             data: isoToday(),
             ingredientes: (preset.ingredientes || []).map((ing: any) => ({
@@ -156,7 +101,7 @@ const App: React.FC = () => {
                 id: crypto.randomUUID(),
                 text: typeof step === 'string' ? step : String(step?.text || '')
             })),
-            observacoes: String(preset.observacoes || ''),
+            observacoes: preset.observacoesKey ? t(preset.observacoesKey) : String(preset.observacoes || ''),
             stripedRows: true,
             exibir_modo_preparo: preset.exibir_modo_preparo ?? true,
             exibir_observacoes: preset.exibir_observacoes ?? true,
@@ -202,7 +147,7 @@ const App: React.FC = () => {
             setIsJsonImportOpen(false);
             setView('EDITOR');
         } catch (err) {
-            alert('JSON inválido. Verifique a estrutura e tente novamente.');
+            alert(t('messages.invalidJson'));
         }
     };
 
@@ -234,6 +179,44 @@ const App: React.FC = () => {
         hasModalOpen: isSettingsOpen || isJsonImportOpen || wizard.isOpen
     });
 
+    const fileBaseName = useMemo(() => {
+        const rawName = currentRecipe.nome_formula || t('common.file');
+        const safeName = rawName
+            .normalize('NFKD')
+            .replace(/[^\w\s-]/g, '')
+            .trim()
+            .replace(/\s+/g, '_');
+        const status = currentRecipe.status || 'RASCUNHO';
+        const date = currentRecipe.data || isoToday();
+        return `Ficha_${safeName}_${status}_${date}`;
+    }, [currentRecipe.nome_formula, currentRecipe.status, currentRecipe.data, t]);
+
+    const handleExportPDF = async () => {
+        if ((currentRecipe.status || 'RASCUNHO') !== 'FINAL') {
+            alert(t('messages.draftPdfBlock'));
+            return;
+        }
+        const target = previewRef.current;
+        if (!target) return;
+        // @ts-expect-error global from CDN
+        const { jsPDF } = window.jspdf || {};
+        if (!jsPDF || !window.html2canvas) {
+            alert(t('messages.exportToolsMissing'));
+            return;
+        }
+        const canvas = await window.html2canvas(target, { scale: 2, backgroundColor: '#ffffff' });
+        const imgData = canvas.toDataURL('image/png');
+        const pdf = new jsPDF('p', 'mm', 'a4');
+        const pageWidth = 210;
+        const pageHeight = 297;
+        pdf.addImage(imgData, 'PNG', 0, 0, pageWidth, pageHeight);
+        pdf.save(`${fileBaseName}.pdf`);
+    };
+
+    useEffect(() => {
+        document.title = t('common.appName');
+    }, [t]);
+
     return (
         <Layout>
             <WizardModal wizard={wizard} animationsEnabled={animationsEnabled} />
@@ -248,7 +231,7 @@ const App: React.FC = () => {
                                 <button
                                     onClick={() => setView('HUB')}
                                     className="ds-icon-button hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors"
-                                    title="Voltar ao Hub"
+                                    title={t('nav.backToHub')}
                                 >
                                     <ArrowLeft size={14} />
                                 </button>
@@ -261,7 +244,7 @@ const App: React.FC = () => {
                                 <div className="w-8 h-8 bg-[var(--primary)] text-white flex items-center justify-center rounded-lg">
                                     <FlaskConical size={14} />
                                 </div>
-                                <h1 className="font-bold text-slate-900 dark:text-white text-lg tracking-tighter uppercase">Formula<span className="text-[var(--primary)]">Pro</span></h1>
+                                <h1 className="font-bold text-slate-900 dark:text-white text-lg tracking-tighter uppercase">{t('common.appName')}</h1>
                             </div>
                         </div>
 
@@ -269,7 +252,7 @@ const App: React.FC = () => {
                             <button
                                 onClick={() => setIsSettingsOpen(true)}
                                 className="ds-icon-button hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors"
-                                title="Configurações"
+                                title={t('nav.settings')}
                             >
                                 <Settings size={14} />
                             </button>
@@ -300,7 +283,7 @@ const App: React.FC = () => {
                                 onClick={() => setIsFocusMode((prev) => !prev)}
                                 className="px-4 py-2 text-xs font-bold ds-button hover:border-[var(--primary)] hover:text-[var(--primary)] transition-colors"
                             >
-                                {isFocusMode ? 'Sair do Modo Foco' : 'Modo Foco'}
+                                {isFocusMode ? t('buttons.exitFocusMode') : t('buttons.focusMode')}
                             </button>
                         </div>
                         <RecipeEditor
@@ -319,48 +302,48 @@ const App: React.FC = () => {
                     <div className="max-w-[210mm] mx-auto flex flex-col items-center py-8 animate-in zoom-in-95 duration-300">
                         <div className="w-full flex items-center justify-between gap-3 mb-6 no-print">
                             <div className="text-xs text-slate-500">
-                                Arquivo: <span className="font-mono text-slate-700 dark:text-slate-200">{fileBaseName}.pdf</span>
+                                {t('common.file')}: <span className="font-mono text-slate-700 dark:text-slate-200">{fileBaseName}.pdf</span>
                             </div>
                             <div className="flex items-center gap-3">
                             <button
                                 onClick={() => setView('EDITOR')}
                                 className="px-5 py-2 text-sm font-bold ds-button hover:border-[var(--primary)] hover:text-[var(--primary)] transition-colors"
                             >
-                                Editar
+                                {t('common.edit')}
                             </button>
                             <button
                                 onClick={handleExportPDF}
                                 className="px-6 py-2 text-sm font-bold ds-button-primary hover:opacity-90 transition-opacity"
                             >
-                                Exportar PDF
+                                {t('buttons.exportPdf')}
                             </button>
                             <button
                                 onClick={() => {
                                     if ((currentRecipe.status || 'RASCUNHO') !== 'FINAL') {
-                                        alert('A ficha está como RASCUNHO. Marque como FINAL para exportar.');
+                                        alert(t('messages.draftExportBlock'));
                                         return;
                                     }
                                     exportToXML(currentRecipe);
                                 }}
                                 className="px-5 py-2 text-sm font-bold ds-button hover:border-[var(--primary)] hover:text-[var(--primary)] transition-colors"
                             >
-                                Exportar XML
+                                {t('buttons.exportXml')}
                             </button>
                             <button
                                 onClick={() => window.print()}
                                 className="px-5 py-2 text-sm font-bold ds-button hover:border-[var(--primary)] hover:text-[var(--primary)] transition-colors"
                             >
-                                Imprimir
+                                {t('buttons.print')}
                             </button>
                             </div>
                         </div>
                         <div className="w-full ds-card">
                             <div className="px-4 pt-4 flex items-center justify-between no-print">
                                 <span className={`text-[10px] font-bold uppercase tracking-widest ${currentRecipe.status === 'FINAL' ? 'text-emerald-600' : 'text-amber-600'}`}>
-                                    {currentRecipe.status || 'RASCUNHO'}
+                                    {currentRecipe.status === 'FINAL' ? t('status.final') : t('status.draft')}
                                 </span>
                                 {currentRecipe.status !== 'FINAL' && (
-                                    <span className="text-[10px] text-slate-400">Pré-visualização em rascunho</span>
+                                    <span className="text-[10px] text-slate-400">{t('preview.draftBadge')}</span>
                                 )}
                             </div>
                             <div ref={previewRef}>
@@ -380,9 +363,9 @@ const App: React.FC = () => {
                                 >
                                     <ArrowLeft size={12} />
                                 </button>
-                                <h2 className="text-2xl font-black text-slate-900 dark:text-white uppercase tracking-tight">Histórico</h2>
+                                <h2 className="text-2xl font-black text-slate-900 dark:text-white uppercase tracking-tight">{t('history.title')}</h2>
                             </div>
-                            <span className="text-sm font-mono text-slate-500">{filteredHistory.length} FICHAS</span>
+                            <span className="text-sm font-mono text-slate-500">{filteredHistory.length} {t('history.count')}</span>
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                             {filteredHistory.map(recipe => (
@@ -403,9 +386,9 @@ const App: React.FC = () => {
                                         </button>
                                     </div>
                                     <h3 className="font-bold text-slate-900 dark:text-white text-lg truncate mb-1">{recipe.nome_formula}</h3>
-                                    <p className="text-xs text-slate-500 font-mono mb-4">{new Date(recipe.data).toLocaleDateString()}</p>
+                                    <p className="text-xs text-slate-500 font-mono mb-4">{new Intl.DateTimeFormat(locale).format(new Date(recipe.data))}</p>
                                     <div className="pt-4 border-t border-slate-100 dark:border-neutral-800 flex justify-between items-center">
-                                        <span className="text-xs font-bold text-slate-400">{recipe.ingredientes.length} Itens</span>
+                                        <span className="text-xs font-bold text-slate-400">{recipe.ingredientes.length} {t('editor.item')}</span>
                                         <ArrowRight size={12} className="text-[var(--primary)] opacity-0 group-hover:opacity-100 transition-opacity" />
                                     </div>
                                 </div>
@@ -424,7 +407,7 @@ const App: React.FC = () => {
                     ></div>
                     <div className="absolute right-0 top-0 h-full w-full max-w-md ds-card border-l border-slate-200 dark:border-neutral-800 p-6 overflow-y-auto">
                         <div className="flex items-center justify-between mb-6">
-                            <h2 className="text-lg font-bold text-slate-900 dark:text-white">Configurações</h2>
+                            <h2 className="text-lg font-bold text-slate-900 dark:text-white">{t('settings.title')}</h2>
                             <button onClick={() => setIsSettingsOpen(false)} className="ds-icon-button">
                                 <X size={14} />
                             </button>
@@ -434,17 +417,31 @@ const App: React.FC = () => {
 
 
                             <div className="p-4 ds-panel">
-                                <h3 className="font-semibold mb-3 dark:text-white">Cor Principal</h3>
+                                <h3 className="font-semibold mb-3 dark:text-white">{t('settings.primaryColor')}</h3>
                                 <div className="flex flex-wrap gap-2">
                                     {UI_THEMES.map(theme => (
                                         <button
-                                            key={theme.name}
+                                            key={theme.nameKey}
                                             onClick={() => setPrimaryColor(theme.color)}
                                             className={`w-8 h-8 rounded-full border ${primaryColor === theme.color ? 'ring-2 ring-offset-2 ring-[var(--primary)]' : ''}`}
                                             style={{ backgroundColor: theme.color }}
+                                            title={t(theme.nameKey)}
                                         />
                                     ))}
                                 </div>
+                            </div>
+
+                            <div className="p-4 ds-panel">
+                                <h3 className="font-semibold mb-3 dark:text-white">{t('settings.language')}</h3>
+                                <select
+                                    className="w-full ds-select p-3 text-sm font-medium"
+                                    value={locale}
+                                    onChange={(e) => setLocale(e.target.value as any)}
+                                >
+                                    <option value="pt-BR">{t('languages.pt-BR')}</option>
+                                    <option value="en">{t('languages.en')}</option>
+                                    <option value="es">{t('languages.es')}</option>
+                                </select>
                             </div>
                         </div>
                     </div>
@@ -459,32 +456,32 @@ const App: React.FC = () => {
                     ></div>
                     <div className="absolute left-1/2 top-1/2 w-[min(720px,92vw)] -translate-x-1/2 -translate-y-1/2 bg-white dark:bg-neutral-900 border border-slate-200 dark:border-neutral-800 rounded-2xl shadow-2xl p-6">
                         <div className="flex items-center justify-between mb-4">
-                            <h2 className="text-lg font-bold text-slate-900 dark:text-white">Importar JSON</h2>
+                            <h2 className="text-lg font-bold text-slate-900 dark:text-white">{t('buttons.importJson')}</h2>
                             <button onClick={() => setIsJsonImportOpen(false)} className="ds-icon-button">
                                 <X size={14} />
                             </button>
                         </div>
                         <p className="text-sm text-slate-500 dark:text-slate-400 mb-3">
-                            Cole o JSON no formato solicitado. Campos opcionais serão preservados.
+                            {t('messages.jsonImportHelp')}
                         </p>
                         <textarea
                             className="w-full h-64 ds-textarea font-mono text-sm focus:border-[var(--primary)]"
                             value={jsonImportText}
                             onChange={(e) => setJsonImportText(e.target.value)}
-                            placeholder={`{\n  "nome_formula": "Tempero Lemon Pepper",\n  "empresa_responsavel": "",\n  "ingredientes": [\n    { "nome": "Sal refinado", "quantidade": 12.5, "unidade": "KG" }\n  ],\n  "modo_preparo": [],\n  "observacoes": ""\n}`}
+                            placeholder={t('placeholders.jsonImportSample')}
                         />
                         <div className="mt-5 flex justify-end gap-3">
                             <button
                                 onClick={() => setIsJsonImportOpen(false)}
                                 className="px-5 py-2 text-sm font-bold ds-button hover:border-[var(--primary)] hover:text-[var(--primary)] transition-colors"
                             >
-                                Cancelar
+                                {t('common.cancel')}
                             </button>
                             <button
                                 onClick={parseJsonImport}
                                 className="px-6 py-2 text-sm font-bold ds-button-primary hover:opacity-90 transition-opacity"
                             >
-                                Importar
+                                {t('buttons.importJson')}
                             </button>
                         </div>
                     </div>
@@ -499,7 +496,7 @@ const App: React.FC = () => {
                     ></div>
                     <div className="absolute left-1/2 top-1/2 w-[min(760px,92vw)] -translate-x-1/2 -translate-y-1/2 ds-card p-6">
                         <div className="flex items-center justify-between mb-4">
-                            <h2 className="text-lg font-bold text-slate-900 dark:text-white">Presets</h2>
+                            <h2 className="text-lg font-bold text-slate-900 dark:text-white">{t('presets.title')}</h2>
                             <button onClick={() => setIsPresetsOpen(false)} className="ds-icon-button">
                                 <X size={14} />
                             </button>
@@ -511,8 +508,8 @@ const App: React.FC = () => {
                                     onClick={() => handleApplyPreset(preset.data)}
                                     className="text-left ds-card p-4 hover:border-[var(--primary)] transition-colors"
                                 >
-                                    <h3 className="text-sm font-bold text-slate-900 dark:text-white">{preset.name}</h3>
-                                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">{preset.description}</p>
+                                    <h3 className="text-sm font-bold text-slate-900 dark:text-white">{t(preset.nameKey)}</h3>
+                                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">{t(preset.descriptionKey)}</p>
                                 </button>
                             ))}
                         </div>
@@ -525,36 +522,3 @@ const App: React.FC = () => {
 };
 
 export default App;
-    const fileBaseName = useMemo(() => {
-        const rawName = currentRecipe.nome_formula || 'Ficha';
-        const safeName = rawName
-            .normalize('NFKD')
-            .replace(/[^\w\s-]/g, '')
-            .trim()
-            .replace(/\s+/g, '_');
-        const status = currentRecipe.status || 'RASCUNHO';
-        const date = currentRecipe.data || isoToday();
-        return `Ficha_${safeName}_${status}_${date}`;
-    }, [currentRecipe.nome_formula, currentRecipe.status, currentRecipe.data]);
-
-    const handleExportPDF = async () => {
-        if ((currentRecipe.status || 'RASCUNHO') !== 'FINAL') {
-            alert('A ficha está como RASCUNHO. Marque como FINAL para exportar PDF.');
-            return;
-        }
-        const target = previewRef.current;
-        if (!target) return;
-        // @ts-expect-error global from CDN
-        const { jsPDF } = window.jspdf || {};
-        if (!jsPDF || !window.html2canvas) {
-            alert('Ferramentas de exportação não disponíveis.');
-            return;
-        }
-        const canvas = await window.html2canvas(target, { scale: 2, backgroundColor: '#ffffff' });
-        const imgData = canvas.toDataURL('image/png');
-        const pdf = new jsPDF('p', 'mm', 'a4');
-        const pageWidth = 210;
-        const pageHeight = 297;
-        pdf.addImage(imgData, 'PNG', 0, 0, pageWidth, pageHeight);
-        pdf.save(`${fileBaseName}.pdf`);
-    };

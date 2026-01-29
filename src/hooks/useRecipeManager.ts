@@ -1,6 +1,5 @@
 import { useState, useCallback } from 'react';
 import { Recipe, Ingredient, Step } from '../types';
-import { parseRecipe } from '../services/geminiService';
 import { arrayMove } from '@dnd-kit/sortable';
 import { isoToday } from '../utils/dateUtils';
 
