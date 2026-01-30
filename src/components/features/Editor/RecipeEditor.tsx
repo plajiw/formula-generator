@@ -1,29 +1,18 @@
 import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import {
-    DndContext,
-    closestCenter,
-    KeyboardSensor,
-    PointerSensor,
-    useSensor,
-    useSensors,
-    DragEndEvent
-} from '@dnd-kit/core';
-import {
-    SortableContext,
-    sortableKeyboardCoordinates,
-    verticalListSortingStrategy
-} from '@dnd-kit/sortable';
-import { restrictToVerticalAxis } from '@dnd-kit/modifiers';
-import { Plus, Trash2, Settings2, Calculator, Save, FileText, Building2, AlertTriangle, Eye, EyeOff, ZoomIn, ZoomOut, RotateCcw, Sparkles } from 'lucide-react';
+import { DragEndEvent } from '@dnd-kit/core';
+import { Save, FileText, Eye, EyeOff, ZoomIn, ZoomOut, RotateCcw } from 'lucide-react';
 
 import { useRecipeManager } from '../../../hooks/useRecipeManager';
-import { SortableItem } from '../../common/SortableItem';
 import { RecipePrintable } from '../../RecipePrintable';
-import { FORMULA_THEMES, FORMULA_FONTS } from '../../../constants/themes';
-import { toISODate } from '../../../utils/dateUtils';
 import { useI18n } from '../../../i18n/i18n.tsx';
 import { generateIllustrationSvg } from '../../../services/geminiService';
 import { sanitizeIllustrationSvg } from '../../../utils/svgUtils';
+
+import { MetadataSection } from './MetadataSection';
+import { IngredientsSection } from './IngredientsSection';
+import { PreparationSection } from './PreparationSection';
+import { ObservationsSection } from './ObservationsSection';
+import { StyleSection } from './StyleSection';
 
 interface RecipeEditorProps {
     manager: ReturnType<typeof useRecipeManager>;
@@ -50,7 +39,7 @@ export const RecipeEditor: React.FC<RecipeEditorProps> = ({
     const [previewScale, setPreviewScale] = useState(1);
     const [pageSize, setPageSize] = useState({ width: 0, height: 0 });
     const editorShellRef = useRef<HTMLDivElement | null>(null);
-    const [previewWidth, setPreviewWidth] = useState(520);
+    const [previewWidth, setPreviewWidth] = useState(0); // Will be set to 50% on mount
     const [showPreview, setShowPreview] = useState(true);
     const [zoomFactor, setZoomFactor] = useState(1);
     const [isMobilePreviewOpen, setIsMobilePreviewOpen] = useState(false);
@@ -58,18 +47,10 @@ export const RecipeEditor: React.FC<RecipeEditorProps> = ({
     const [isIllustrationGenerating, setIsIllustrationGenerating] = useState(false);
     const [illustrationError, setIllustrationError] = useState<string | null>(null);
 
+    // Memoized ingredient data
     const ingredientNames = useMemo(
         () => currentRecipe.ingredientes.map((ing) => ing.nome?.trim()).filter((name) => !!name) as string[],
         [currentRecipe.ingredientes]
-    );
-    const canGenerateIllustration = !!currentRecipe.nome_formula?.trim() || ingredientNames.length > 0;
-    const hasIllustration = !!currentRecipe.ilustracao_svg?.trim();
-
-    const sensors = useSensors(
-        useSensor(PointerSensor),
-        useSensor(KeyboardSensor, {
-            coordinateGetter: sortableKeyboardCoordinates,
-        })
     );
 
     const handleDragEndIngredients = (event: DragEndEvent) => {
@@ -86,25 +67,8 @@ export const RecipeEditor: React.FC<RecipeEditorProps> = ({
         }
     };
 
-    const totalWeight = currentRecipe.ingredientes.reduce((acc, curr) => acc + (curr.quantidade || 0), 0);
-    const totalCost = currentRecipe.ingredientes.reduce((acc, curr) => acc + ((curr.custo_unitario || 0) * (curr.quantidade || 0)), 0);
-    const hasFilledIngredients = currentRecipe.ingredientes.some((ing) => ing.nome.trim() || ing.quantidade > 0);
-
-    const unitSuggestion = (nome: string, unidade: string) => {
-        const lower = nome.toLowerCase();
-        const solidKeywords = ['sal', 'açúcar', 'acucar', 'farinha', 'amido', 'pó', 'po', 'pimenta', 'alho', 'cebola', 'temper', 'salsa', 'ervas'];
-        const liquidKeywords = ['óleo', 'oleo', 'agua', 'água', 'leite', 'vinagre', 'suco'];
-        if ((unidade === 'ML' || unidade === 'LT') && solidKeywords.some((k) => lower.includes(k))) {
-            return t('validation.unitSolid');
-        }
-        if ((unidade === 'KG' || unidade === 'GR') && liquidKeywords.some((k) => lower.includes(k))) {
-            return t('validation.unitLiquid');
-        }
-        return '';
-    };
-
     const handleGenerateIllustration = async () => {
-        if (!canGenerateIllustration || isIllustrationGenerating) return;
+        if (!currentRecipe.nome_formula?.trim() && ingredientNames.length === 0 || isIllustrationGenerating) return;
         setIllustrationError(null);
         setIsIllustrationGenerating(true);
         try {
@@ -163,14 +127,13 @@ export const RecipeEditor: React.FC<RecipeEditorProps> = ({
     }, [pageSize.width]);
 
     useEffect(() => {
-        const storedWidth = Number(localStorage.getItem('previewWidth') || '');
         const storedVisible = localStorage.getItem('previewVisible');
         const storedZoom = Number(localStorage.getItem('previewZoom') || '');
         if (storedVisible !== null) setShowPreview(storedVisible === 'true');
         if (Number.isFinite(storedZoom) && storedZoom > 0) setZoomFactor(storedZoom);
-        if (Number.isFinite(storedWidth) && storedWidth > 0) {
-            setPreviewWidth(storedWidth);
-        } else if (editorShellRef.current) {
+
+        // Initialize preview width to 50% on mount
+        if (editorShellRef.current) {
             const shellWidth = editorShellRef.current.getBoundingClientRect().width;
             setPreviewWidth(Math.round(shellWidth / 2));
         }
@@ -179,10 +142,6 @@ export const RecipeEditor: React.FC<RecipeEditorProps> = ({
     useEffect(() => {
         localStorage.setItem('previewVisible', String(showPreview));
     }, [showPreview]);
-
-    useEffect(() => {
-        localStorage.setItem('previewWidth', String(previewWidth));
-    }, [previewWidth]);
 
     useEffect(() => {
         localStorage.setItem('previewZoom', String(zoomFactor));
@@ -194,10 +153,9 @@ export const RecipeEditor: React.FC<RecipeEditorProps> = ({
             const shell = editorShellRef.current;
             if (!shell) return;
             const rect = shell.getBoundingClientRect();
-            const minPreview = 360;
-            const minEditor = 480;
-            const maxPreview = Math.max(minPreview, rect.width - minEditor);
-            const nextWidth = Math.min(maxPreview, Math.max(minPreview, rect.right - event.clientX));
+            const maxPreviewWidth = Math.round(rect.width / 2); // Maximum 50% of total width
+            const minEditorWidth = Math.round(rect.width / 2); // Minimum 50% for editor (since preview is max 50%)
+            const nextWidth = Math.max(minEditorWidth, Math.min(maxPreviewWidth, rect.right - event.clientX));
             setPreviewWidth(Math.round(nextWidth));
         };
         const handleUp = () => setIsResizing(false);
@@ -219,7 +177,7 @@ export const RecipeEditor: React.FC<RecipeEditorProps> = ({
             className={`flex flex-col lg:flex-row overflow-hidden bg-slate-50 dark:bg-neutral-950 transition-colors ${focusMode ? 'h-[calc(100vh-1rem)]' : 'h-[calc(100vh-3.5rem)]'}`}
         >
 
-            {/* LEFT COLUMN: EDITOR CONTROLS (Scrollable) */}
+            {/* LEFT COLUMN: EDITOR CONTROLS - Flex grow to fill remaining space */}
             <div className="flex-1 overflow-y-auto border-r border-slate-200 dark:border-neutral-800 p-6 lg:p-8 scrollbar-thin scrollbar-thumb-slate-300 dark:scrollbar-thumb-slate-700">
 
                 <div className="max-w-5xl mx-auto space-y-8">
@@ -265,52 +223,12 @@ export const RecipeEditor: React.FC<RecipeEditorProps> = ({
                     </div>
 
                     {/* Metadata Card */}
-                    <div className="ds-card p-6 space-y-5">
-                        <div className="flex items-center gap-2 mb-2 text-[var(--primary)]">
-                            <FileText size={18} />
-                            <span className="text-xs font-bold uppercase tracking-widest">{t('editor.mainData')}</span>
-                        </div>
-
-                        <div className="space-y-4">
-                            {/* Nome do Produto */}
-                            <div>
-                                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">{t('editor.productName')}</label>
-                                <input
-                                    className="w-full text-xl font-bold ds-input ds-input-lg focus:border-[var(--primary)] focus:ring-1 focus:ring-[var(--primary)] transition-all placeholder-slate-300"
-                                    value={currentRecipe.nome_formula}
-                                    onChange={(e) => manager.handleFieldChange('nome_formula', e.target.value)}
-                                    placeholder={t('placeholders.productName')}
-                                />
-                            </div>
-
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                                {/* Nome da Empresa */}
-                                <div>
-                                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">{t('editor.company')}</label>
-                                    <div className="relative">
-                                        <Building2 className="absolute left-3 top-2.5 text-slate-400" size={16} />
-                                        <input
-                                            className="w-full ds-input pl-10 text-sm font-medium focus:border-[var(--primary)] transition-colors"
-                                            value={currentRecipe.nome_empresa || ''}
-                                            onChange={(e) => manager.handleFieldChange('nome_empresa', e.target.value)}
-                                            placeholder={t('placeholders.company')}
-                                        />
-                                    </div>
-                                </div>
-
-                                {/* Data */}
-                                <div>
-                                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">{t('editor.creationDate')}</label>
-                                    <input
-                                        type="date"
-                                        className="w-full ds-input text-sm font-medium focus:border-[var(--primary)] transition-colors"
-                                        value={toISODate(currentRecipe.data)}
-                                        onChange={(e) => manager.handleFieldChange('data', e.target.value)}
-                                    />
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                    <MetadataSection
+                        nomeFormula={currentRecipe.nome_formula}
+                        nomeEmpresa={currentRecipe.nome_empresa || ''}
+                        data={currentRecipe.data}
+                        manager={manager}
+                    />
 
                     {/* Tabs */}
                     <div className="flex border-b border-slate-200 dark:border-slate-800">
@@ -331,304 +249,49 @@ export const RecipeEditor: React.FC<RecipeEditorProps> = ({
                     {/* Content Tab */}
                     {activeTab === 'content' && (
                         <div className="space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-300">
+                            {/* Ingredients Section */}
+                            <IngredientsSection
+                                ingredientes={currentRecipe.ingredientes}
+                                manager={manager}
+                                newlyAddedId={newlyAddedId}
+                                onDragEnd={handleDragEndIngredients}
+                            />
 
-                            {/* Ingredients Table */}
-                            <div className="ds-card overflow-hidden">
-                                <div className="p-4 bg-slate-50 dark:bg-neutral-900/50 border-b border-slate-200 dark:border-neutral-800 flex justify-between items-center">
-                                    <div className="flex items-center gap-2">
-                                        <h3 className="text-sm font-bold uppercase tracking-wide text-slate-700 dark:text-slate-300">{t('editor.ingredients')}</h3>
-                                    </div>
-                                        <button onClick={manager.addIngredient} className="ds-button text-[var(--primary)] bg-[var(--primary)]/10 hover:bg-[var(--primary)] hover:text-white transition-colors">
-                                        <Plus size={14} /> {t('buttons.addItem')}
-                                        </button>
-                                </div>
+                            {/* Preparation Section */}
+                            <PreparationSection
+                                steps={currentRecipe.modo_preparo}
+                                exibir_modo_preparo={currentRecipe.exibir_modo_preparo ?? true}
+                                manager={manager}
+                                newlyAddedId={newlyAddedId}
+                                onDragEnd={handleDragEndSteps}
+                            />
 
-                                <div className="p-2">
-                                    {hasFilledIngredients && totalWeight === 0 && (
-                                        <div className="mx-2 mb-2 flex items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-700">
-                                            <AlertTriangle size={14} />
-                                            {t('validation.totalWeightZero')}
-                                        </div>
-                                    )}
-                                    {/* Header Row */}
-                                    <div className="grid grid-cols-12 gap-2 pl-10 pr-3 py-2 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                                        <div className="col-span-1 hidden sm:block">#</div>
-                                        <div className="col-span-1 block sm:hidden"></div>
-                                        <div className="col-span-5 text-left">{t('editor.itemHeader')}</div>
-                                        <div className="col-span-2 text-right">{t('common.qty')}</div>
-                                        <div className="col-span-2 text-center">{t('common.unit')}</div>
-                                        <div className="col-span-2 text-right">{t('editor.unitPrice')}</div>
-                                    </div>
-
-                                    <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEndIngredients} modifiers={[restrictToVerticalAxis]}>
-                                        <SortableContext items={currentRecipe.ingredientes} strategy={verticalListSortingStrategy}>
-                                            <div className="space-y-1">
-                                                {currentRecipe.ingredientes.map((ing, idx) => {
-                                                    const totalWeightCalc = totalWeight || 1;
-                                                    const pct = ((ing.quantidade || 0) / totalWeightCalc) * 100;
-
-                                                    return (
-                                                        <SortableItem key={ing.id} id={ing.id} newlyAddedId={newlyAddedId} animationsEnabled={false}>
-                                                            <div className="grid grid-cols-12 gap-2 items-start pr-3">
-                                                                {/* Removed manual GripVertical here, using SortableItem's internal grip */}
-                                                                <div className="col-span-1 hidden sm:flex justify-center pt-3 text-xs font-bold text-slate-300">
-                                                                    {idx + 1}
-                                                                </div>
-                                                                <div className="col-span-1 flex sm:hidden justify-center pt-3 text-xs font-bold text-slate-300">
-                                                                    {idx + 1}
-                                                                </div>
-
-                                                                <div className="col-span-5 min-h-[64px] flex flex-col gap-1">
-                                                                    <input
-                                                                        className="w-full h-10 ds-input text-sm font-medium focus:border-[var(--primary)] transition-colors"
-                                                                        value={ing.nome}
-                                                                        onChange={(e) => manager.updateIngredient(ing.id, 'nome', e.target.value)}
-                                                                        placeholder={t('placeholders.ingredientName')}
-                                                                    />
-                                                                    <div className="min-h-[16px] text-[10px] text-slate-400 font-mono ml-1">{pct.toFixed(1)}%</div>
-                                                                </div>
-                                                                <div className="col-span-2 min-h-[64px] flex flex-col gap-1">
-                                                                    <input
-                                                                        type="number"
-                                                                        className={`w-full h-10 ds-input text-right text-sm font-mono focus:border-[var(--primary)] transition-colors ${ing.quantidade === 0 ? 'border-amber-300' : ''}`}
-                                                                        value={ing.quantidade}
-                                                                        onChange={(e) => {
-                                                                            const val = parseFloat(e.target.value) || 0;
-                                                                            manager.updateIngredient(ing.id, 'quantidade', val);
-                                                                        }}
-                                                                    />
-                                                                    <div className="min-h-[16px] text-[10px] text-amber-600 flex items-center gap-1">
-                                                                        {ing.quantidade === 0 && (<><AlertTriangle size={12} /> {t('validation.qtyZero')}</>)}
-                                                                    </div>
-                                                                </div>
-                                                                <div className="col-span-2 min-h-[64px] flex flex-col gap-1">
-                                                                    <select
-                                                                        className="w-full h-10 ds-select text-xs font-bold uppercase text-center cursor-pointer"
-                                                                        value={ing.unidade}
-                                                                        onChange={(e) => manager.updateIngredient(ing.id, 'unidade', e.target.value)}
-                                                                    >
-                                                                        {['GR', 'KG', 'ML', 'LT', 'UN'].map(u => <option key={u} value={u}>{u}</option>)}
-                                                                    </select>
-                                                                    <div className="min-h-[16px] text-[10px] text-amber-600 flex items-center gap-1">
-                                                                        {ing.nome && unitSuggestion(ing.nome, ing.unidade) ? (<><AlertTriangle size={12} /> {unitSuggestion(ing.nome, ing.unidade)}</>) : null}
-                                                                    </div>
-                                                                </div>
-                                                                <div className="col-span-2 min-h-[64px] flex flex-col gap-1">
-                                                                    <div className="flex items-center gap-2">
-                                                                        <span className="text-xs text-slate-400">{t('common.currency')}</span>
-                                                                        <input
-                                                                            type="number"
-                                                                            className="w-full h-10 ds-input text-right text-sm font-mono focus:border-[var(--primary)] transition-colors"
-                                                                            placeholder={t('placeholders.unitPrice')}
-                                                                            value={ing.custo_unitario || ''}
-                                                                            onChange={(e) => manager.updateIngredient(ing.id, 'custo_unitario', parseFloat(e.target.value) || 0)}
-                                                                        />
-                                                                        <button
-                                                                            onClick={() => manager.removeIngredient(ing.id)}
-                                                                            className="w-9 h-9 flex items-center justify-center rounded text-red-500 hover:text-red-700 hover:bg-red-100 transition"
-                                                                        >
-                                                                            <Trash2 size={14} />
-                                                                        </button>
-                                                                    </div>
-                                                                    <div className="min-h-[16px]"></div>
-                                                                </div>
-                                                            </div>
-                                                        </SortableItem>
-                                                    )
-                                                })}
-                                            </div>
-                                        </SortableContext>
-                                    </DndContext>
-                                </div>
-
-                                {/* Totals Footer */}
-                                <div className="bg-slate-100 dark:bg-neutral-900/50 p-4 border-t border-slate-200 dark:border-neutral-800 flex justify-between items-center">
-                                    <div>
-                                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{t('editor.totalWeight')}</p>
-                                        <p className="text-xl font-mono font-bold text-slate-700 dark:text-slate-200">{totalWeight.toFixed(3)} <span className="text-sm text-slate-400">{t('common.unit')}</span></p>
-                                    </div>
-                                    <div className="text-right">
-                                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{t('editor.estimatedCost')}</p>
-                                        <p className="text-xl font-mono font-bold text-emerald-600 dark:text-emerald-400">{t('common.currency')} {totalCost.toFixed(2)}</p>
-                                    </div>
-                                </div>
-
-                            </div>
-
-                            {/* Preparation Steps */}
-                            <div className="ds-card p-6">
-                                <div className="flex flex-wrap justify-between items-center gap-3 mb-4">
-                                    <div className="flex items-center gap-3">
-                                        <h3 className="text-sm font-bold uppercase tracking-wide text-slate-700 dark:text-slate-300">{t('editor.preparation')}</h3>
-                                        <label className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-slate-500">
-                                            <input
-                                                type="checkbox"
-                                                checked={currentRecipe.exibir_modo_preparo ?? true}
-                                                onChange={(e) => manager.handleFieldChange('exibir_modo_preparo', e.target.checked)}
-                                                className="w-4 h-4 rounded border-slate-300 text-[var(--primary)] focus:ring-[var(--primary)] cursor-pointer"
-                                            />
-                                            {t('editor.showInFile')}
-                                        </label>
-                                    </div>
-                                    <button onClick={manager.addStep} className="ds-button text-[var(--primary)] hover:border-[var(--primary)] hover:text-[var(--primary)] transition-colors">
-                                        <Plus size={14} /> {t('buttons.addStep')}
-                                    </button>
-                                </div>
-
-                                <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEndSteps} modifiers={[restrictToVerticalAxis]}>
-                                    <SortableContext items={currentRecipe.modo_preparo} strategy={verticalListSortingStrategy}>
-                                        <div className="space-y-3">
-                                            {currentRecipe.modo_preparo.map((step, idx) => (
-                                                <SortableItem key={step.id} id={step.id} newlyAddedId={newlyAddedId} animationsEnabled={false}>
-                                                    <div className="flex flex-1 min-w-0 w-full gap-3 items-start">
-                                                        <div className="w-8 h-8 mt-0.5 rounded bg-slate-100 dark:bg-neutral-800 flex items-center justify-center text-xs font-bold text-slate-500 dark:text-slate-400 flex-shrink-0">
-                                                            {idx + 1}
-                                                        </div>
-                                                        <textarea
-                                                            className="flex-1 min-w-0 w-full bg-transparent text-sm outline-none resize-none min-h-[36px] leading-6 border-b border-transparent focus:border-[var(--primary)] transition-colors pt-1"
-                                                            value={step.text}
-                                                            onChange={(e) => manager.updateStep(step.id, e.target.value)}
-                                                            placeholder={t('placeholders.step')}
-                                                        />
-                                                        <button
-                                                            onClick={() => manager.removeStep(step.id)}
-                                                            className="w-8 h-8 flex items-center justify-center rounded text-red-500 hover:text-red-700 hover:bg-red-50 transition"
-                                                        >
-                                                            <Trash2 size={14} />
-                                                        </button>
-                                                    </div>
-                                                </SortableItem>
-                                            ))}
-                                        </div>
-                                    </SortableContext>
-                                </DndContext>
-                                <p className="text-[10px] text-slate-400 mt-4 italic">{t('editor.emptyHint')}</p>
-                            </div>
-
-                            {/* Observations */}
-                            <div className="ds-card p-6 space-y-2">
-                                <div className="flex flex-wrap items-center gap-3">
-                                    <h3 className="text-sm font-bold uppercase tracking-wide text-slate-700 dark:text-slate-300">{t('editor.observations')}</h3>
-                                    <label className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-slate-500">
-                                        <input
-                                            type="checkbox"
-                                            checked={currentRecipe.exibir_observacoes ?? true}
-                                            onChange={(e) => manager.handleFieldChange('exibir_observacoes', e.target.checked)}
-                                            className="w-4 h-4 rounded border-slate-300 text-[var(--primary)] focus:ring-[var(--primary)] cursor-pointer"
-                                        />
-                                        {t('editor.showInFile')}
-                                    </label>
-                                </div>
-                                <textarea
-                                    className="w-full min-w-0 ds-textarea text-sm focus:ring-1 focus:ring-amber-200 transition-all"
-                                    placeholder={t('placeholders.observations')}
-                                    value={currentRecipe.observacoes}
-                                    onChange={(e) => manager.handleFieldChange('observacoes', e.target.value)}
-                                />
-                                <p className="text-[10px] text-slate-400 italic">{t('editor.optionalHint')}</p>
-                            </div>
-
+                            {/* Observations Section */}
+                            <ObservationsSection
+                                observacoes={currentRecipe.observacoes}
+                                exibir_observacoes={currentRecipe.exibir_observacoes ?? true}
+                                manager={manager}
+                            />
                         </div>
                     )}
 
                     {/* Style Tab */}
                     {activeTab === 'style' && (
                         <div className="space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-300">
-                            <div className="grid grid-cols-2 gap-4">
-                                {FORMULA_THEMES.map((theme) => (
-                                    <button
-                                        key={theme.nameKey}
-                                        onClick={() => manager.handleFieldChange('accentColor', theme.color)}
-                                        className={`h-12 rounded-xl border flex items-center justify-center font-bold text-sm transition ${currentRecipe.accentColor === theme.color ? 'border-[var(--primary)] bg-[var(--primary)]/5 text-[var(--primary)] shadow-sm' : 'border-slate-200 dark:border-neutral-800 text-slate-500 hover:bg-slate-50 dark:hover:bg-neutral-800'}`}
-                                    >
-                                        <div className="w-3 h-3 rounded-full mr-2" style={{ backgroundColor: theme.color }}></div>
-                                        {t(theme.nameKey)}
-                                    </button>
-                                ))}
-                            </div>
-
-                            <div className="space-y-3 p-6 ds-card">
-                                <label className="text-xs font-bold text-slate-400 uppercase tracking-widest">{t('editor.typography')}</label>
-                                <select
-                                    className="w-full ds-select p-3 text-sm font-medium"
-                                    value={currentRecipe.fontFamily || FORMULA_FONTS[0].value}
-                                    onChange={(e) => manager.handleFieldChange('fontFamily', e.target.value)}
-                                >
-                                    {FORMULA_FONTS.map((font) => (
-                                        <option key={font.value} value={font.value}>{font.name}</option>
-                                    ))}
-                                </select>
-                            </div>
-
-                            <div className="ds-card p-6 space-y-4">
-                                <div className="flex flex-wrap items-center justify-between gap-4">
-                                    <div>
-                                        <h3 className="text-sm font-bold uppercase tracking-wide text-slate-700 dark:text-slate-300">{t('editor.illustration')}</h3>
-                                        <p className="text-xs text-slate-400 mt-1">{t('editor.illustrationHint')}</p>
-                                    </div>
-                                    <label className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-slate-500">
-                                        <input
-                                            type="checkbox"
-                                            checked={currentRecipe.exibir_ilustracao ?? false}
-                                            onChange={(e) => manager.handleFieldChange('exibir_ilustracao', e.target.checked)}
-                                            disabled={!hasIllustration}
-                                            className="w-4 h-4 rounded border-slate-300 text-[var(--primary)] focus:ring-[var(--primary)] cursor-pointer disabled:opacity-50"
-                                        />
-                                        {t('editor.showInFile')}
-                                    </label>
-                                </div>
-                                <div className="flex flex-wrap items-center gap-3">
-                                    <button
-                                        onClick={handleGenerateIllustration}
-                                        disabled={!canGenerateIllustration || isIllustrationGenerating}
-                                        className="px-4 py-2 text-xs font-bold ds-button hover:border-[var(--primary)] hover:text-[var(--primary)] transition-colors disabled:opacity-50 flex items-center gap-2"
-                                    >
-                                        <Sparkles size={14} />
-                                        {isIllustrationGenerating
-                                            ? t('editor.illustrationLoading')
-                                            : hasIllustration
-                                                ? t('editor.illustrationRegenerate')
-                                                : t('editor.illustrationGenerate')}
-                                    </button>
-                                    {hasIllustration && (
-                                        <button
-                                            onClick={handleRemoveIllustration}
-                                            className="px-4 py-2 text-xs font-bold ds-button hover:border-red-400 hover:text-red-500 transition-colors"
-                                        >
-                                            {t('editor.illustrationRemove')}
-                                        </button>
-                                    )}
-                                </div>
-                                {!canGenerateIllustration && (
-                                    <p className="text-[10px] text-slate-400 italic">{t('editor.illustrationEmpty')}</p>
-                                )}
-                                {illustrationError && (
-                                    <p className="text-xs text-red-500">{illustrationError}</p>
-                                )}
-                                {hasIllustration && (
-                                    <div className="flex items-center gap-4">
-                                        <div
-                                            className="w-20 h-20 rounded-xl border border-slate-200 dark:border-neutral-800 bg-slate-50 dark:bg-neutral-900 flex items-center justify-center recipe-illustration"
-                                            role="img"
-                                            aria-label={currentRecipe.ilustracao_alt || t('printable.illustrationAltFallback')}
-                                            style={{ color: currentRecipe.accentColor || primaryColor }}
-                                            dangerouslySetInnerHTML={{ __html: currentRecipe.ilustracao_svg || '' }}
-                                        />
-                                        <div className="text-xs text-slate-500">{currentRecipe.ilustracao_alt || t('printable.illustrationAltFallback')}</div>
-                                    </div>
-                                )}
-                            </div>
-
-                            <div className="flex items-center gap-3 p-6 ds-card">
-                                <input
-                                    type="checkbox"
-                                    id="striped"
-                                    checked={!!currentRecipe.stripedRows}
-                                    onChange={(e) => manager.handleFieldChange('stripedRows', e.target.checked)}
-                                    className="w-5 h-5 rounded border-gray-300 text-[var(--primary)] focus:ring-[var(--primary)] cursor-pointer"
-                                />
-                                <label htmlFor="striped" className="text-sm font-bold text-slate-700 dark:text-white cursor-pointer">{t('editor.stripedRows')}</label>
-                            </div>
+                            <StyleSection
+                                accentColor={currentRecipe.accentColor || primaryColor}
+                                fontFamily={currentRecipe.fontFamily || ''}
+                                exibir_ilustracao={currentRecipe.exibir_ilustracao ?? false}
+                                ilustracao_svg={currentRecipe.ilustracao_svg || ''}
+                                ilustracao_alt={currentRecipe.ilustracao_alt || ''}
+                                ingredientNames={ingredientNames}
+                                nomeFormula={currentRecipe.nome_formula}
+                                isIllustrationGenerating={isIllustrationGenerating}
+                                illustrationError={illustrationError}
+                                manager={manager}
+                                onGenerateIllustration={handleGenerateIllustration}
+                                onRemoveIllustration={handleRemoveIllustration}
+                            />
                         </div>
                     )}
 

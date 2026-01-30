@@ -28,13 +28,14 @@ export const SortableItem = ({ id, children, newlyAddedId, animationsEnabled }: 
             style={style}
             className={`${isDragging ? '' : 'transition-shadow duration-150'} ${isNew ? `ring-2 ring-[var(--primary)] ring-offset-2 rounded-xl ${animationsEnabled ? 'animate-pulse' : ''}` : ''}`}
         >
-            <div className="flex items-center gap-2">
+            <div className="flex items-stretch gap-0.5 group">
                 <div
                     {...attributes}
                     {...listeners}
-                    className="w-8 h-8 flex items-center justify-center cursor-grab hover:text-[var(--primary)] text-slate-300 dark:text-slate-500 touch-none"
+                    className="w-7 flex items-center justify-center cursor-grab hover:text-[var(--primary)] text-slate-300 dark:text-slate-600 touch-none hover:bg-slate-50 dark:hover:bg-slate-800/50 rounded-lg transition-colors duration-200 flex-shrink-0"
+                    title="Arrastar para reorganizar"
                 >
-                    <GripVertical size={16} />
+                    <GripVertical size={16} strokeWidth={2.5} />
                 </div>
                 {children}
             </div>

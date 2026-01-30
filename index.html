@@ -63,23 +63,27 @@
             --radius-lg: 14px;
             --radius-md: 12px;
             --radius-sm: 8px;
-            --border: #e2e8f0;
-            --shadow-1: 0 8px 20px rgba(15, 23, 42, 0.06);
-            --surface-0: #f8fafc;
-            --surface-1: #f1f5f9;
-            --surface-2: #e2e8f0;
-            --ink-0: #0f172a;
-            --ink-1: #334155;
+            --border: #d9d9d9;
+            --shadow-1: 0 8px 20px rgba(0, 0, 0, 0.08);
+            --surface-0: #ffffff;
+            --surface-1: #f5f5f5;
+            --surface-2: #e8e8e8;
+            --surface-3: #d3d3d3;
+            --ink-0: #1a1a1a;
+            --ink-1: #4a4a4a;
+            --ink-2: #757575;
         }
 
         html.dark {
-            --surface-0: #0b0b0c;
-            --surface-1: #111214;
-            --surface-2: #1a1c1f;
-            --ink-0: #f8fafc;
-            --ink-1: #cbd5f5;
-            --border: #2a2d32;
-            --shadow-1: 0 10px 22px rgba(0, 0, 0, 0.35);
+            --surface-0: #0f0f0f;
+            --surface-1: #1a1a1a;
+            --surface-2: #2a2a2a;
+            --surface-3: #3a3a3a;
+            --ink-0: #f5f5f5;
+            --ink-1: #d0d0d0;
+            --ink-2: #a0a0a0;
+            --border: #3a3a3a;
+            --shadow-1: 0 10px 22px rgba(0, 0, 0, 0.4);
         }
 
         .rounded-2xl {
@@ -120,11 +124,38 @@
             background: var(--surface-1);
             color: var(--ink-0);
             outline: none;
+            transition: all 0.2s ease;
+        }
+
+        .ds-input:focus,
+        .ds-select:focus,
+        .ds-textarea:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(var(--primary-rgb, 59, 130, 246), 0.1);
         }
 
         .ds-input {
             height: 36px;
             padding: 0 12px;
+        }
+
+        .ds-input::-webkit-outer-spin-button,
+        .ds-input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        .ds-input[type=number] {
+            -moz-appearance: textfield;
+        }
+
+        /* Number input spinners styling */
+        .ds-input[type="number"]::-webkit-outer-spin-button,
+        .ds-input[type="number"]::-webkit-inner-spin-button {
+            -webkit-appearance: inner-spin-button !important;
+            display: flex;
+            height: 100%;
+            opacity: 0.5;
         }
 
         .ds-input-lg {
@@ -152,6 +183,16 @@
             gap: 8px;
             white-space: nowrap;
             line-height: 1;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+
+        .ds-button:hover {
+            background-color: var(--surface-2);
+        }
+
+        .ds-button:active {
+            transform: scale(0.98);
         }
 
         .ds-button-primary {
@@ -169,6 +210,18 @@
             gap: 8px;
             white-space: nowrap;
             line-height: 1;
+            transition: all 0.2s ease;
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(var(--primary-rgb, 59, 130, 246), 0.2);
+        }
+
+        .ds-button-primary:hover {
+            filter: brightness(1.1);
+            box-shadow: 0 4px 12px rgba(var(--primary-rgb, 59, 130, 246), 0.3);
+        }
+
+        .ds-button-primary:active {
+            transform: scale(0.98);
         }
 
         .ds-icon-button {
@@ -181,6 +234,12 @@
             border: 1px solid var(--border);
             background: transparent;
             color: var(--ink-1);
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+
+        .ds-icon-button:hover {
+            background-color: var(--surface-2);
         }
 
         .ds-drop {

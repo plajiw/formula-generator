@@ -2,7 +2,13 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { Recipe } from "../types";
 
-const ai = new GoogleGenAI({ apiKey: import.meta.env.VITE_API_KEY || '' });
+const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+
+if (!apiKey) {
+  console.warn('Warning: VITE_GEMINI_API_KEY environment variable is not set. AI features will not work.');
+}
+
+const ai = new GoogleGenAI({ apiKey: apiKey || '' });
 
 const RECIPE_SCHEMA = {
   type: Type.OBJECT,
